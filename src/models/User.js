@@ -14,7 +14,9 @@ const user = mongoose.Schema({
     province: { type: String, required: true },
     postcode: { type: Number, required: true },
   },
-  product: [{ type: mongoose.Types.ObjectId, ref: "Product" }],
+  // products: [{ type: mongoose.Types.ObjectId, ref: "Product" }],
+  status: { type: String, required: true },
+  role: { type: String, required: true },
 });
 
 exports.User = mongoose.model("User", user);
