@@ -1,16 +1,28 @@
+require("dotenv").config();
+
 import mongoose from "mongoose";
 import { User } from "./models/User";
 import { Product } from "./models/Product";
 import { GraphQLScalarType, Kind } from "graphql";
 
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import blacklist from "express-jwt-blacklist";
+
 export const resolvers = {
   Query: {
     hello: () => "hello",
     //User Query
+    me: async (parent, args, { userCtx }, info) => {
+      if (!userCtx) {
+        throw new Error("You are not authenticated!");
+      }
+
+      return await User.findById(userCtx.id);
+    },
     getUsers: async (parent, args, ctx, info) => {
       if (!args.username) {
         const users = await User.find();
-        console.log(users);
         return users;
       } else {
         const username = args.username;
@@ -63,7 +75,41 @@ export const resolvers = {
   },
   Mutation: {
     //User Mutation
-    createUser: async (parent, args, ctx, info) => {
+    login: async (parent, { email, password }, ctx, info) => {
+      const user = await User.findOne({ email: email });
+
+      if (!user) {
+        throw new Error("No user with this email");
+      }
+
+      // const valid = await bcrypt.compare(password, user.password);
+      // if (!valid) {
+      //   throw new Error("Incorrect password");
+      // }
+
+      if (user.password !== password) {
+        throw new Error("Incorrect password");
+      }
+
+      const token = jwt.sign(
+        { jti: user.id, id: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1d",
+        }
+      );
+      return token;
+    },
+    logout: async (parent, args, { userCtx }, info) => {
+      if (!userCtx) {
+        throw new Error("You are not authenticated!");
+      }
+
+      await blacklist.revoke(userCtx, 3600);
+
+      return "Logout Successfully.";
+    },
+    singup: async (parent, args, ctx, info) => {
       const {
         email,
         first,
@@ -109,17 +155,15 @@ export const resolvers = {
       await user.save();
       return user;
     },
-    updateUser: async (parent, args, ctx, info) => {
-      const { id, first, last, username, phone, address, province, postcode } =
-        args;
-
-      const ValidId = mongoose.isValidObjectId(id);
-
-      if (!ValidId) {
-        throw new Error("ObjectId is invalid.");
+    updateUser: async (parent, args, { userCtx }, info) => {
+      if (!userCtx) {
+        throw new Error("You are not authenticated!");
       }
 
-      const user = await User.findById(id).exec();
+      const { first, last, username, phone, address, province, postcode } =
+        args;
+
+      const user = await User.findById(userCtx.id).exec();
       if (user === null) {
         throw new Error("User not found.");
       }
@@ -174,16 +218,36 @@ export const resolvers = {
 
       return user;
     },
+    addWatch: async (parent, { productId }, { userCtx }, info) => {
+      if (!userCtx) {
+        throw new Error("You are not authenticated!");
+      }
+
+      const product = await Product.findById(productId);
+      if (!product) {
+        throw new Error("This product is not exists.");
+      }
+
+      const productIsActived = product.status === "ACTIVED";
+      if (!productIsActived) {
+        throw new Error("This product is not Actived.");
+      }
+
+      userCtx.watchlists.push(productId);
+
+      return await userCtx.save();
+    },
 
     //Product Mutation
-    createProduct: async (parent, args, ctx, info) => {
-      const { creatorId, title, desc, initialPrice, start, status } = args;
-
-      const ValidId = mongoose.isValidObjectId(creatorId);
-
-      if (!ValidId) {
-        throw new Error("ObjectId is invalid.");
+    createProduct: async (parent, args, { userCtx }, info) => {
+      if (!userCtx) {
+        throw new Error("You are not authenticated!");
       }
+
+      const { title, desc, initialPrice, start, status } = args;
+
+      const creatorId = userCtx.id;
+      console.log(userCtx.id);
 
       const userExists = await User.findById(creatorId);
       if (!userExists) {
@@ -225,7 +289,9 @@ export const resolvers = {
   },
   Product: {
     seller: async (parent, args, ctx, info) => {
-      return await User.findOne({ id: parent.id });
+      const user = await User.findById(parent.seller);
+      console.log(user);
+      return user;
     },
   },
 };

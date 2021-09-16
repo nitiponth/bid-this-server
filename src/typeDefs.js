@@ -5,6 +5,7 @@ export const typeDefs = gql`
   type Query {
     hello: String!
     #User Query
+    me: User
     getUsers(username: String): [User!]!
     getOneUser(username: String!): User!
 
@@ -14,7 +15,9 @@ export const typeDefs = gql`
   }
   type Mutation {
     #User mutation
-    createUser(
+    login(email: String!, password: String!): String
+    logout: String
+    singup(
       email: String!
       first: String!
       last: String!
@@ -26,7 +29,6 @@ export const typeDefs = gql`
       postcode: String!
     ): User!
     updateUser(
-      id: ID!
       first: String
       last: String
       username: String
@@ -35,13 +37,13 @@ export const typeDefs = gql`
       province: String
       postcode: String
     ): User!
+    addWatch(productId: ID!): User!
 
     # Product mutation
     createProduct(
       title: String!
       desc: String!
       initialPrice: Int!
-      creatorId: ID!
       status: ProductStatus!
       start: Date!
     ): Product!
