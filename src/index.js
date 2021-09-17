@@ -2,8 +2,19 @@ import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import mongoose from "mongoose";
 
-import { typeDefs } from "./typeDefs";
-import { resolvers } from "./resolvers";
+import { typeDef as QueryType } from "./Schema/Query";
+import { typeDef as MutationType } from "./Schema/Mutation";
+import { typeDef as UserType } from "./Schema/User";
+import { typeDef as ProductType } from "./Schema/Product";
+import { typeDef as BidType } from "./Schema/Bid";
+
+// import { resolvers } from "./resolvers";
+import Query from "./Resolvers/Query";
+import Mutation from "./Resolvers/Mutation";
+import ScalarDate from "./Resolvers/ScalarDate";
+import User from "./Resolvers/User";
+import Product from "./Resolvers/Product";
+import Bid from "./Resolvers/Bid";
 
 import xjwt from "express-jwt";
 import blacklist from "express-jwt-blacklist";
@@ -26,8 +37,15 @@ const startServer = async () => {
   );
 
   const server = new ApolloServer({
-    typeDefs,
-    resolvers,
+    typeDefs: [QueryType, MutationType, UserType, ProductType, BidType],
+    resolvers: {
+      Query,
+      Mutation,
+      ScalarDate,
+      User,
+      Product,
+      Bid,
+    },
     context: ({ req }) => {
       const header = req.headers.authorization || "";
       const token = header.split(" ")[1];

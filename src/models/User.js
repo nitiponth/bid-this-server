@@ -16,14 +16,15 @@ const user = mongoose.Schema(
       postcode: { type: Number, required: true },
     },
     watchlists: [{ type: mongoose.Types.ObjectId, ref: "Product" }],
+    wallet: { type: Number, required: true },
     // products: [{ type: mongoose.Types.ObjectId, ref: "Product" }],
     status: { type: String, required: true },
     role: { type: String, required: true },
   },
   {
     timestamps: {
-      createdAt: "created_at",
-      updatedAt: "updated_at",
+      createdAt: true,
+      updatedAt: true,
     },
   }
 );

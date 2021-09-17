@@ -11,20 +11,13 @@ const product = mongoose.Schema(
     seller: { type: mongoose.Types.ObjectId, ref: "User", required: true },
     buyer: { type: mongoose.Types.ObjectId, ref: "User" },
     start: { type: Date, required: true },
-    end: { type: Date },
-    bid: [
-      {
-        bidPrice: { type: Number },
-        bidder: { type: mongoose.Types.ObjectId, ref: "User" },
-        bidTime: { type: Date },
-      },
-    ],
+    end: { type: Date, required: true },
     status: { type: String, required: true },
   },
   {
     timestamps: {
-      createdAt: "created_at",
-      updatedAt: "updated_at",
+      createdAt: true,
+      updatedAt: true,
     },
   }
 );
