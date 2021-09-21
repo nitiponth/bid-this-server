@@ -2,7 +2,7 @@ import { gql } from "apollo-server-express";
 
 export const typeDef = gql`
   type Bid {
-    productId: ID!
+    product: Product!
     bidPrice: Int!
     bidder: User!
     bidResult: String

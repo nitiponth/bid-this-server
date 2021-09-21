@@ -10,6 +10,7 @@ export const typeDef = gql`
     phone: String!
     address: Address!
     products: [Product!]!
+    watchlists: [Product!]!
     wallet: Int!
     status: Status!
     role: Role!

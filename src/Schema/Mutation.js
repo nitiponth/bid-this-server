@@ -26,7 +26,9 @@ export const typeDef = gql`
       province: String
       postcode: String
     ): User!
-    addWatch(productId: ID!): User!
+    addToWatchlists(productId: ID!): User!
+    depositCredit(value: Int!): User!
+    withdrawCredit(value: Int!): User!
 
     # Product mutation
     createProduct(
@@ -35,6 +37,24 @@ export const typeDef = gql`
       initialPrice: Int!
       status: ProductStatus!
       start: ScalarDate!
+    ): Product!
+    updateProduct(
+      productId: ID!
+      title: String
+      desc: String
+      initialPrice: Int
+      status: ProductStatus
+      start: ScalarDate
+    ): Product!
+    deleteProduct(productId: ID!): String
+    adminUpdateProduct(
+      productId: ID!
+      title: String
+      desc: String
+      initialPrice: Int
+      status: ProductStatus
+      start: ScalarDate
+      end: ScalarDate
     ): Product!
 
     # Bid Mutation

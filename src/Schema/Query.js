@@ -8,6 +8,7 @@ export const typeDef = gql`
     me: User
     getUsers(username: String): [User!]!
     getOneUser(username: String!): User!
+    addToWatchlists(productId: ID!): User!
 
     #Product Query
     getProducts(title: String): [Product!]!

@@ -97,8 +97,8 @@ const Mutation = {
 
     const { first, last, username, phone, address, province, postcode } = args;
 
-    const user = await User.findById(userCtx.id).exec();
-    if (user === null) {
+    const user = await User.findById(userCtx.id);
+    if (!user) {
       throw new Error("User not found.");
     }
 
@@ -152,9 +152,14 @@ const Mutation = {
 
     return user;
   },
-  addWatch: async (parent, { productId }, { userCtx }, info) => {
+  addToWatchlists: async (parent, { productId }, { userCtx }, info) => {
     if (!userCtx) {
       throw new Error("You are not authenticated!");
+    }
+
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found.");
     }
 
     const product = await Product.findById(productId);
@@ -167,9 +172,46 @@ const Mutation = {
       throw new Error("This product is not Actived.");
     }
 
-    userCtx.watchlists.push(productId);
+    const productIdx = user.watchlists.indexOf(productId);
+    if (productIdx == -1) {
+      user.watchlists.push(productId);
+    } else {
+      user.watchlists.splice(productIdx, 1);
+    }
 
-    return await userCtx.save();
+    return await user.save();
+  },
+  depositCredit: async (parent, { value }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+    if (user.status === "BANNED") {
+      throw new Error("User has been suspended.");
+    }
+
+    user.wallet = user.wallet + value;
+
+    return await user.save();
+  },
+  withdrawCredit: async (parent, { value }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+    if (user.status === "BANNED") {
+      throw new Error("User has been suspended.");
+    }
+
+    user.wallet = user.wallet + value;
+
+    return await user.save();
   },
 
   //Product Mutation
@@ -218,11 +260,100 @@ const Mutation = {
 
     return product;
   },
+  updateProduct: async (parent, args, { userCtx }, info) => {
+    const { productId, title, desc, initialPrice, start, status } = args;
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error("Product not found");
+    }
+    if (product.seller.toString() !== userCtx.id.toString()) {
+      throw new Error("Authorization failed");
+    }
+    if (product.status === "BANNED") {
+      throw new Error("This product has been suspended.");
+    }
+    if (product.price.current) {
+      throw new Error(
+        "The auction has started. Unable to edit product information"
+      );
+    }
+    if (product.start < new Date() + 3600000) {
+      throw new Error(
+        "The auction time cannot be modified 1 hour before the auction time."
+      );
+    }
+    if (typeof title === "string" && title.trim() !== "") {
+      product.title = title;
+    }
+    if (typeof desc === "string") {
+      product.desc = desc;
+    }
+    if (typeof initialPrice === "number") {
+      product.price.initial = initialPrice;
+    }
+    if (typeof status === "string") {
+      if (status !== "ACTIVED" && status !== "INACTIVED") {
+        throw new Error("Invalid status");
+      }
+      product.status = status;
+    }
+    if (typeof start === "object") {
+      if (start < new Date() + 3600000) {
+        throw new Error(
+          "The auction time must be adjusted at least 1 hour before the auction starts."
+        );
+      }
+      product.start = start;
+      const endTime = new Date(start);
+      endTime.setHours(endTime.getHours() + 1);
+      product.end = endTime;
+    }
+
+    return await product.save();
+  },
+  deleteProduct: async (parent, { productId }, { userCtx }, info) => {
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error("Product not found.");
+    }
+    if (userCtx.id.toString() !== product.seller.toString()) {
+      throw new Error("Not authorized to delete this product");
+    }
+    if (product.start < new Date()) {
+      throw new Error("The auction has started. Unable to delete product.");
+    }
+  },
+  adminUpdateProduct: async (parent, args, { userCtx }, info) => {
+    const { productId, title, desc, initialPrice, start, end, status } = args;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    product.end = end;
+
+    return await product.save();
+  },
 
   // Bid Mutation
   placeBid: async (parent, { productId, bidPrice }, { userCtx }, info) => {
-    //Price check
+    //Actived check
     const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error("Product not found");
+    }
+    if (product.status !== "ACTIVED") {
+      throw new Error("Product is not active for bid.");
+    }
+
+    //Time check
+    const currentTime = new Date();
+    if (product.end < currentTime) {
+      throw new Error("This auction has ended.");
+    }
+
+    //Price check
     if (bidPrice < product.price.initial || bidPrice <= product.price.current) {
       throw new Error(
         "Can't offer a price lower than the reserve or current price."
@@ -230,12 +361,15 @@ const Mutation = {
     }
 
     //Wallet Check
-    const bidInfo = await Bid.find({ productId: productId }).sort({
-      bidTime: -1,
-    });
+    let bidInfo;
+    if (product.price.current) {
+      bidInfo = await Bid.find({ product: productId }).sort({
+        bidTime: -1,
+      });
+    }
 
     const user = await User.findById(userCtx.id);
-    if (bidInfo[0].bidder.toString() === userCtx.id) {
+    if (product.price.current && bidInfo[0].bidder.toString() === userCtx.id) {
       //bidder is the same one with old bidder
       if (user.wallet + bidInfo[0].bidPrice < bidPrice) {
         throw new Error("Your balance is not enough to bid.");
@@ -261,15 +395,26 @@ const Mutation = {
 
     //create new bid infomation
     const newBidInfo = new Bid({
-      productId: productId,
+      product: productId,
       bidPrice: bidPrice,
       bidder: userCtx.id,
-      bidTime: new Date(),
+      bidTime: currentTime,
     });
     await newBidInfo.save();
 
     //update product's current price
     product.price.current = bidPrice;
+
+    //update end time
+    const timeDiff = product.end - currentTime;
+    //timeDiff < 5m
+    if (timeDiff < 300000) {
+      //product.end = product.end + 10m
+      const endTime = currentTime;
+      endTime.setMinutes(endTime.getMinutes() + 10);
+      product.end = endTime;
+    }
+
     await product.save();
 
     return newBidInfo;
