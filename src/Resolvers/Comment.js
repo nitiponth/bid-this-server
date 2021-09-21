@@ -1,13 +1,13 @@
 import { User } from "../models/User";
 import { Product } from "../models/Product";
 
-const Bid = {
-  bidder: async (parent, args, ctx, info) => {
-    return await User.findById(parent.bidder);
-  },
+const Comment = {
   product: async (parent, args, ctx, info) => {
     return await Product.findById(parent.product);
   },
+  buyer: async (parent, args, ctx, info) => {
+    return await User.findById(parent.buyer);
+  },
 };
 
-export default Bid;
+export default Comment;

@@ -7,6 +7,8 @@ import { typeDef as MutationType } from "./Schema/Mutation";
 import { typeDef as UserType } from "./Schema/User";
 import { typeDef as ProductType } from "./Schema/Product";
 import { typeDef as BidType } from "./Schema/Bid";
+import { typeDef as CommentType } from "./Schema/Comment";
+import { typeDef as SubscriptionType } from "./Schema/Subscription";
 
 // import { resolvers } from "./resolvers";
 import Query from "./Resolvers/Query";
@@ -15,6 +17,7 @@ import ScalarDate from "./Resolvers/ScalarDate";
 import User from "./Resolvers/User";
 import Product from "./Resolvers/Product";
 import Bid from "./Resolvers/Bid";
+import Comment from "./Resolvers/Comment";
 
 import xjwt from "express-jwt";
 import blacklist from "express-jwt-blacklist";
@@ -37,7 +40,15 @@ const startServer = async () => {
   );
 
   const server = new ApolloServer({
-    typeDefs: [QueryType, MutationType, UserType, ProductType, BidType],
+    typeDefs: [
+      QueryType,
+      MutationType,
+      UserType,
+      ProductType,
+      BidType,
+      CommentType,
+      SubscriptionType,
+    ],
     resolvers: {
       Query,
       Mutation,
@@ -45,6 +56,7 @@ const startServer = async () => {
       User,
       Product,
       Bid,
+      Comment,
     },
     context: ({ req }) => {
       const header = req.headers.authorization || "";

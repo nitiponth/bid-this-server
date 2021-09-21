@@ -1,5 +1,6 @@
 import { User } from "../models/User";
 import { Product } from "../models/Product";
+import { Comment } from "../models/Comment";
 import mongoose from "mongoose";
 
 const Query = {
@@ -74,6 +75,12 @@ const Query = {
       throw new Error("Product not found");
     }
     return product;
+  },
+
+  // Comment Query
+  getComments: async (parent, args, ctx, info) => {
+    const comments = await Comment.find();
+    return comments;
   },
 };
 

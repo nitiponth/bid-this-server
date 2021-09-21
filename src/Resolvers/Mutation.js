@@ -1,6 +1,7 @@
 import { User } from "../models/User";
 import { Product } from "../models/Product";
 import { Bid } from "../models/Bid";
+import { Comment } from "../models/Comment";
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -322,6 +323,8 @@ const Mutation = {
     if (product.start < new Date()) {
       throw new Error("The auction has started. Unable to delete product.");
     }
+    await Product.deleteOne({ _id: productId });
+    return "Product deleted successfully.";
   },
   adminUpdateProduct: async (parent, args, { userCtx }, info) => {
     const { productId, title, desc, initialPrice, start, end, status } = args;
@@ -418,6 +421,63 @@ const Mutation = {
     await product.save();
 
     return newBidInfo;
+  },
+
+  // Comment mutaiton
+  createComment: async (parent, args, { userCtx }, info) => {
+    const { productId, body, score } = args;
+
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error("Product not found.");
+    }
+
+    //Auction end check
+    if (product.end > new Date()) {
+      throw new Error("The auction is not over yet.");
+    }
+
+    if (!product.price.current) {
+      throw new Error("No user bids for this item.");
+    }
+
+    if (!product.buyer) {
+      const bidInfo = await Bid.find({ product: product.id }).sort({
+        bidTime: -1,
+      });
+      const buyer = await User.findById(bidInfo[0].bidder.toString());
+      product.buyer = buyer;
+      await product.save();
+    }
+
+    if (product.buyer.toString() != userCtx.id.toString()) {
+      throw new Error(
+        "Only the buyer has the right to comment on this product."
+      );
+    }
+
+    let comment = await Comment.findOne({ product: productId });
+    if (!comment) {
+      comment = new Comment({
+        product: productId,
+        body: body,
+        score: score,
+        buyer: product.buyer,
+      });
+    } else {
+      if (typeof body === "string") {
+        comment.body = body;
+      }
+      if (typeof score === "number") {
+        comment.score = score;
+      }
+    }
+
+    return await comment.save();
   },
 };
 

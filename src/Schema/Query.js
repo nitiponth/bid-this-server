@@ -14,5 +14,8 @@ export const typeDef = gql`
     getProducts(title: String): [Product!]!
     getProductById(productId: ID!): Product!
     getOneProduct(title: String!): Product!
+
+    #Comment Query
+    getComments: [Comment!]!
   }
 `;

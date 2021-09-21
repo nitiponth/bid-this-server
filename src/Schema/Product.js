@@ -8,6 +8,7 @@ export const typeDef = gql`
     price: Price!
     seller: User!
     buyer: User
+    bids: [Bid!]!
     start: ScalarDate!
     end: ScalarDate!
     status: ProductStatus!

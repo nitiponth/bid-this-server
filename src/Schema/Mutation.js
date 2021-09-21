@@ -59,6 +59,9 @@ export const typeDef = gql`
 
     # Bid Mutation
     placeBid(productId: ID!, bidPrice: Int!): Bid!
+
+    # Comment Muatation
+    createComment(productId: ID!, body: String!, score: Float!): Comment!
   }
 
   scalar ScalarDate
