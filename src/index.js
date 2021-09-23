@@ -1,5 +1,9 @@
-import express from "express";
+import { createServer } from "http";
+import { execute, subscribe } from "graphql";
 import { ApolloServer } from "apollo-server-express";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import express from "express";
+import { SubscriptionServer } from "subscriptions-transport-ws";
 import mongoose from "mongoose";
 
 import { typeDef as QueryType } from "./Schema/Query";
@@ -10,7 +14,6 @@ import { typeDef as BidType } from "./Schema/Bid";
 import { typeDef as CommentType } from "./Schema/Comment";
 import { typeDef as SubscriptionType } from "./Schema/Subscription";
 
-// import { resolvers } from "./resolvers";
 import Query from "./Resolvers/Query";
 import Mutation from "./Resolvers/Mutation";
 import ScalarDate from "./Resolvers/ScalarDate";
@@ -18,13 +21,17 @@ import User from "./Resolvers/User";
 import Product from "./Resolvers/Product";
 import Bid from "./Resolvers/Bid";
 import Comment from "./Resolvers/Comment";
+import Subscription from "./Resolvers/Subscription";
 
 import xjwt from "express-jwt";
 import blacklist from "express-jwt-blacklist";
 require("dotenv").config();
 
+import { pubsub } from "./utils/pubsub";
+
 const startServer = async () => {
   const app = express();
+  const httpServer = createServer(app);
 
   blacklist.configure({
     tokenId: "jti",
@@ -39,7 +46,7 @@ const startServer = async () => {
     })
   );
 
-  const server = new ApolloServer({
+  const schema = makeExecutableSchema({
     typeDefs: [
       QueryType,
       MutationType,
@@ -57,23 +64,49 @@ const startServer = async () => {
       Product,
       Bid,
       Comment,
+      Subscription,
     },
+  });
+
+  const server = new ApolloServer({
+    schema,
+    plugins: [
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              subscriptionServer.close();
+            },
+          };
+        },
+      },
+    ],
     context: ({ req }) => {
       const header = req.headers.authorization || "";
       const token = header.split(" ")[1];
       const userCtx = req.user || null;
-      return { token, userCtx };
+      return { token, userCtx, pubsub };
     },
   });
 
+  const subscriptionServer = SubscriptionServer.create(
+    {
+      schema,
+      execute,
+      subscribe,
+    },
+    { server: httpServer, path: "/subscriptions" }
+  );
+
   await server.start();
   server.applyMiddleware({ app });
+  process.setMaxListeners(0);
 
   await mongoose.connect(
     "mongodb+srv://gorgias:testpassword123456@cluster0.regwz.mongodb.net/testDb?retryWrites=true&w=majority"
   );
 
-  app.listen({ port: 4000 }, () =>
+  httpServer.listen({ port: 4000 }, () =>
     console.log(`Server ready at http://localhost:4000${server.graphqlPath}`)
   );
 };

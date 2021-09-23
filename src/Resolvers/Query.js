@@ -5,6 +5,8 @@ import mongoose from "mongoose";
 
 const Query = {
   hello: () => "hello",
+  currentNumber: () => currentNumber,
+
   //User Query
   me: async (parent, args, { userCtx }, info) => {
     if (!userCtx) {

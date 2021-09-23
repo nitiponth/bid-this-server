@@ -7,6 +7,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import blacklist from "express-jwt-blacklist";
 
+import { pubsub } from "../utils/pubsub";
+
 const Mutation = {
   //User Mutation
   login: async (parent, { email, password }, ctx, info) => {
@@ -89,6 +91,11 @@ const Mutation = {
       role: "USER",
     });
     await user.save();
+
+    pubsub.publish("USER_CREATED", {
+      userCreated: user,
+    });
+
     return user;
   },
   updateUser: async (parent, args, { userCtx }, info) => {
@@ -230,14 +237,14 @@ const Mutation = {
       throw new Error("User not found.");
     }
 
-    const now = new Date();
-    const limitTime = now.setHours(now.getHours() + 2);
+    // const now = new Date();
+    // const limitTime = now.setHours(now.getHours() + 2);
 
-    if (start < limitTime) {
-      throw new Error(
-        "The timer must be set at least 2 hours from the current time."
-      );
-    }
+    // if (start < limitTime) {
+    //   throw new Error(
+    //     "The timer must be set at least 2 hours from the current time."
+    //   );
+    // }
 
     const endTime = new Date(start);
     endTime.setHours(endTime.getHours() + 1);
@@ -255,6 +262,10 @@ const Mutation = {
     });
 
     await product.save();
+
+    pubsub.publish("PRODUCT_CREATED", {
+      productCreated: product,
+    });
 
     // userExists.products.push(product.id);
     // await userExists.save();
@@ -403,6 +414,7 @@ const Mutation = {
       bidder: userCtx.id,
       bidTime: currentTime,
     });
+
     await newBidInfo.save();
 
     //update product's current price
@@ -419,6 +431,10 @@ const Mutation = {
     }
 
     await product.save();
+
+    pubsub.publish(`BID_PLACED ${productId}`, {
+      bidPlaced: { product: product, bidInfo: newBidInfo },
+    });
 
     return newBidInfo;
   },

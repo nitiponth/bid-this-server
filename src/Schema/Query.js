@@ -3,6 +3,7 @@ import { gql } from "apollo-server-express";
 export const typeDef = gql`
   type Query {
     hello: String!
+    currentNumber: Int
 
     #User Query
     me: User
