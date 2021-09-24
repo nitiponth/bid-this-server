@@ -4,7 +4,7 @@ import { gql } from "apollo-server-express";
 export const typeDef = gql`
   type Mutation {
     #User mutation
-    login(email: String!, password: String!): String
+    login(email: String!, password: String!): userInformation
     logout: String
     singup(
       email: String!
@@ -62,6 +62,12 @@ export const typeDef = gql`
 
     # Comment Muatation
     createComment(productId: ID!, body: String!, score: Float!): Comment!
+  }
+
+  type userInformation {
+    token: String
+    userId: String
+    expired: ScalarDate
   }
 
   scalar ScalarDate

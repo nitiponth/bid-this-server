@@ -30,7 +30,14 @@ const Mutation = {
         expiresIn: "1d",
       }
     );
-    return token;
+
+    const expired = jwt.decode(token).exp;
+
+    return {
+      token: token,
+      userId: user.id.toString(),
+      expired: new Date(expired * 1000),
+    };
   },
   logout: async (parent, args, { userCtx }, info) => {
     if (!userCtx) {
