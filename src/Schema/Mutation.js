@@ -16,7 +16,7 @@ export const typeDef = gql`
       address: String!
       province: String!
       postcode: String!
-    ): User!
+    ): String
     updateUser(
       first: String
       last: String
@@ -60,8 +60,12 @@ export const typeDef = gql`
     # Bid Mutation
     placeBid(productId: ID!, bidPrice: Int!): Bid!
 
-    # Comment Muatation
+    # Comment Mutation
     createComment(productId: ID!, body: String!, score: Float!): Comment!
+
+    # Upload Mutation
+    # uploadProfile(file: Upload!): File!
+    # singleUpload(file: Upload!): File!
   }
 
   type userInformation {

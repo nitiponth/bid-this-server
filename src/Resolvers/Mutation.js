@@ -9,6 +9,24 @@ import blacklist from "express-jwt-blacklist";
 
 import { pubsub } from "../utils/pubsub";
 
+const storeUpload = async ({ stream, filename, mimetype }) => {
+  const id = shortid.generate();
+  const path = `images/${id}-${filename}`;
+  // (createWriteStream) writes our file to the images directory
+  return new Promise((resolve, reject) =>
+    stream
+      .pipe(createWriteStream(path))
+      .on("finish", () => resolve({ id, path, filename, mimetype }))
+      .on("error", reject)
+  );
+};
+const processUpload = async (upload) => {
+  const { createReadStream, filename, mimetype } = await upload;
+  const stream = createReadStream();
+  const file = await storeUpload({ stream, filename, mimetype });
+  return file;
+};
+
 const Mutation = {
   //User Mutation
   login: async (parent, { email, password }, ctx, info) => {
@@ -103,7 +121,7 @@ const Mutation = {
       userCreated: user,
     });
 
-    return user;
+    return "Signup has been successful.";
   },
   updateUser: async (parent, args, { userCtx }, info) => {
     if (!userCtx) {

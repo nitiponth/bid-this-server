@@ -12,6 +12,8 @@ export const typeDef = gql`
     products: [Product!]!
     watchlists: [Product!]!
     wallet: Int!
+    profile: String!
+    kyc: Kyc
     status: Status!
     role: Role!
   }
@@ -25,6 +27,11 @@ export const typeDef = gql`
     home: String!
     province: String!
     postcode: String!
+  }
+
+  type Kyc {
+    idcard: String
+    photo: String
   }
 
   enum Status {

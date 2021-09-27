@@ -18,5 +18,8 @@ export const typeDef = gql`
 
     #Comment Query
     getComments: [Comment!]!
+
+    #Upload Query
+    uploadedFiles: [File]
   }
 `;

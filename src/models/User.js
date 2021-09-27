@@ -17,7 +17,11 @@ const user = mongoose.Schema(
     },
     watchlists: [{ type: mongoose.Types.ObjectId, ref: "Product" }],
     wallet: { type: Number, required: true },
-    // products: [{ type: mongoose.Types.ObjectId, ref: "Product" }],
+    profile: { type: String, required: true },
+    kyc: {
+      idcard: { type: String },
+      photo: { type: String },
+    },
     status: { type: String, required: true },
     role: { type: String, required: true },
   },

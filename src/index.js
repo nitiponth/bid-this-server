@@ -1,6 +1,6 @@
 import { createServer } from "http";
 import { execute, subscribe } from "graphql";
-import { ApolloServer } from "apollo-server-express";
+import { ApolloServer, gql } from "apollo-server-express";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import express from "express";
 import { SubscriptionServer } from "subscriptions-transport-ws";
@@ -13,6 +13,7 @@ import { typeDef as ProductType } from "./Schema/Product";
 import { typeDef as BidType } from "./Schema/Bid";
 import { typeDef as CommentType } from "./Schema/Comment";
 import { typeDef as SubscriptionType } from "./Schema/Subscription";
+import { typeDef as FileType } from "./Schema/File";
 
 import Query from "./Resolvers/Query";
 import Mutation from "./Resolvers/Mutation";
@@ -55,6 +56,7 @@ const startServer = async () => {
       BidType,
       CommentType,
       SubscriptionType,
+      FileType,
     ],
     resolvers: {
       Query,
