@@ -21,10 +21,14 @@ export const typeDef = gql`
       first: String
       last: String
       username: String
-      phone: String
       address: String
       province: String
       postcode: String
+      desc: String
+      profile: String
+      cover: String
+      idCard: String
+      photo: String
     ): User!
     addToWatchlists(productId: ID!): User!
     depositCredit(value: Int!): User!
@@ -64,8 +68,6 @@ export const typeDef = gql`
     createComment(productId: ID!, body: String!, score: Float!): Comment!
 
     # Upload Mutation
-    # uploadProfile(file: Upload!): File!
-    # singleUpload(file: Upload!): File!
   }
 
   type userInformation {

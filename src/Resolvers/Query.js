@@ -29,6 +29,17 @@ const Query = {
       return users;
     }
   },
+  getUserById: async (parent, { userId }, ctx, info) => {
+    if (!userId) {
+      throw new Error("Syntax Error! Need userId.");
+    } else {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+      return user;
+    }
+  },
   getOneUser: async (parent, args, ctx, info) => {
     if (!args.username) {
       throw new Error("Syntax Error!");

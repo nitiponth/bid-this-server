@@ -8,24 +8,7 @@ import jwt from "jsonwebtoken";
 import blacklist from "express-jwt-blacklist";
 
 import { pubsub } from "../utils/pubsub";
-
-const storeUpload = async ({ stream, filename, mimetype }) => {
-  const id = shortid.generate();
-  const path = `images/${id}-${filename}`;
-  // (createWriteStream) writes our file to the images directory
-  return new Promise((resolve, reject) =>
-    stream
-      .pipe(createWriteStream(path))
-      .on("finish", () => resolve({ id, path, filename, mimetype }))
-      .on("error", reject)
-  );
-};
-const processUpload = async (upload) => {
-  const { createReadStream, filename, mimetype } = await upload;
-  const stream = createReadStream();
-  const file = await storeUpload({ stream, filename, mimetype });
-  return file;
-};
+import e from "cors";
 
 const Mutation = {
   //User Mutation
@@ -128,7 +111,19 @@ const Mutation = {
       throw new Error("You are not authenticated!");
     }
 
-    const { first, last, username, phone, address, province, postcode } = args;
+    const {
+      first,
+      last,
+      username,
+      address,
+      province,
+      postcode,
+      desc,
+      profile,
+      cover,
+      idCard,
+      photo,
+    } = args;
 
     const user = await User.findById(userCtx.id);
     if (!user) {
@@ -155,15 +150,15 @@ const Mutation = {
       user.username = username;
     }
 
-    if (typeof phone === "string") {
-      if (isNaN(phone)) {
-        throw new Error("Phone number must be entered in numbers only.");
-      }
-      if (phone.length !== 10) {
-        throw new Error("Phone number must be 10 digits.");
-      }
-      user.phone = phone;
-    }
+    // if (typeof phone === "string") {
+    //   if (isNaN(phone)) {
+    //     throw new Error("Phone number must be entered in numbers only.");
+    //   }
+    //   if (phone.length !== 10) {
+    //     throw new Error("Phone number must be 10 digits.");
+    //   }
+    //   user.phone = phone;
+    // }
 
     if (typeof address === "string") {
       user.address.home = address;
@@ -181,6 +176,38 @@ const Mutation = {
       user.address.postcode = postcode;
     }
 
+    if (typeof desc === "string") {
+      user.desc = desc;
+    }
+
+    if (typeof profile === "string") {
+      if (profile === "") {
+        user.profile = null;
+      } else {
+        user.profile = profile;
+      }
+    }
+    if (typeof cover === "string") {
+      if (cover === "") {
+        user.cover = null;
+      } else {
+        user.cover = cover;
+      }
+    }
+    if (typeof idCard === "string") {
+      if (idCard === "") {
+        user.kyc.idCard = null;
+      } else {
+        user.kyc.idCard = idCard;
+      }
+    }
+    if (typeof photo === "string") {
+      if (photo === "") {
+        user.kyc.photo = null;
+      } else {
+        user.kyc.photo = photo;
+      }
+    }
     await user.save();
 
     return user;

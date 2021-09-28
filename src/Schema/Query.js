@@ -9,6 +9,7 @@ export const typeDef = gql`
     me: User
     getUsers(username: String): [User!]!
     getOneUser(username: String!): User!
+    getUserById(userId: ID!): User!
     addToWatchlists(productId: ID!): User!
 
     #Product Query
@@ -20,6 +21,6 @@ export const typeDef = gql`
     getComments: [Comment!]!
 
     #Upload Query
-    uploadedFiles: [File]
+    # uploadedFiles: [File]
   }
 `;

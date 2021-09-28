@@ -7,12 +7,14 @@ export const typeDef = gql`
     email: String!
     password: String!
     username: String!
+    desc: String
     phone: String!
     address: Address!
     products: [Product!]!
     watchlists: [Product!]!
     wallet: Int!
-    profile: String!
+    profile: String
+    cover: String
     kyc: Kyc
     status: Status!
     role: Role!
@@ -30,7 +32,7 @@ export const typeDef = gql`
   }
 
   type Kyc {
-    idcard: String
+    idCard: String
     photo: String
   }
 

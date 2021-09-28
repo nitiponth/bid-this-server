@@ -9,6 +9,7 @@ const user = mongoose.Schema(
       last: { type: String, required: true, trim: true },
     },
     username: { type: String, required: true, unique: true },
+    desc: { type: String },
     phone: { type: String, required: true },
     address: {
       home: { type: String, required: true },
@@ -17,9 +18,10 @@ const user = mongoose.Schema(
     },
     watchlists: [{ type: mongoose.Types.ObjectId, ref: "Product" }],
     wallet: { type: Number, required: true },
-    profile: { type: String, required: true },
+    profile: { type: String },
+    cover: { type: String },
     kyc: {
-      idcard: { type: String },
+      idCard: { type: String },
       photo: { type: String },
     },
     status: { type: String, required: true },

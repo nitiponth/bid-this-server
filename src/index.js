@@ -13,7 +13,6 @@ import { typeDef as ProductType } from "./Schema/Product";
 import { typeDef as BidType } from "./Schema/Bid";
 import { typeDef as CommentType } from "./Schema/Comment";
 import { typeDef as SubscriptionType } from "./Schema/Subscription";
-import { typeDef as FileType } from "./Schema/File";
 
 import Query from "./Resolvers/Query";
 import Mutation from "./Resolvers/Mutation";
@@ -56,7 +55,6 @@ const startServer = async () => {
       BidType,
       CommentType,
       SubscriptionType,
-      FileType,
     ],
     resolvers: {
       Query,
