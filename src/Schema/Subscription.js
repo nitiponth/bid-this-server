@@ -5,6 +5,8 @@ export const typeDef = gql`
     userCreated: User
     productCreated: Product!
     bidPlaced(productId: ID!): BidSubPayload!
+    walletChanged(userId: ID!): Int!
+    productsChanged: String
   }
 
   type BidSubPayload {

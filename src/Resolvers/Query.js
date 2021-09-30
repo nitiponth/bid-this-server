@@ -69,6 +69,18 @@ const Query = {
     }
     return products;
   },
+  getActivedProducts: async (parent, args, ctx, info) => {
+    const currentTime = new Date().toLocaleString("en-Us");
+
+    const products = await Product.find({
+      start: { $lt: currentTime },
+      end: { $gte: currentTime },
+    });
+    if (!products) {
+      throw new Error("Product not found.");
+    }
+    return products;
+  },
   getProductById: async (parent, args, ctx, info) => {
     const { productId } = args;
     if (!mongoose.isValidObjectId(productId)) {
@@ -88,6 +100,36 @@ const Query = {
       throw new Error("Product not found");
     }
     return product;
+  },
+  getProductsByUserId: async (parent, { userId, filter }, ctx, info) => {
+    const currentTime = new Date().toLocaleString("en-Us");
+    let products;
+    if (!filter) {
+      products = await Product.find({
+        start: { $lt: currentTime },
+        end: { $gte: currentTime },
+        seller: userId,
+      });
+    }
+
+    if (filter === "AUCTIONED") {
+      products = await Product.find({
+        end: { $lte: currentTime },
+        seller: userId,
+      });
+    }
+
+    if (filter === "BIDDED") {
+      products = await Product.find({
+        end: { $lte: currentTime },
+        buyer: userId,
+      });
+    }
+
+    if (!products) {
+      throw new Error("Product not found.");
+    }
+    return products;
   },
 
   // Comment Query

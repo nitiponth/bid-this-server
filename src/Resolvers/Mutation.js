@@ -255,6 +255,10 @@ const Mutation = {
 
     user.wallet = user.wallet + value;
 
+    pubsub.publish(`WALLET_CHANGED ${userCtx.id}`, {
+      walletChanged: user.wallet,
+    });
+
     return await user.save();
   },
   withdrawCredit: async (parent, { value }, { userCtx }, info) => {
@@ -270,6 +274,9 @@ const Mutation = {
     }
 
     user.wallet = user.wallet + value;
+    pubsub.publish(`WALLET_CHANGED ${userCtx.id}`, {
+      walletChanged: user.wallet,
+    });
 
     return await user.save();
   },
@@ -310,7 +317,7 @@ const Mutation = {
       seller: creatorId,
       start: start,
       end: endTime,
-      status: status,
+      status: "ACTIVED",
     });
 
     await product.save();
@@ -434,6 +441,7 @@ const Mutation = {
       });
     }
 
+    //Check wallet values
     const user = await User.findById(userCtx.id);
     if (product.price.current && bidInfo[0].bidder.toString() === userCtx.id) {
       //bidder is the same one with old bidder
@@ -452,12 +460,19 @@ const Mutation = {
       const oldBidder = await User.findById(bidInfo[0].bidder);
       oldBidder.wallet = oldBidder.wallet + bidInfo[0].bidPrice;
       await oldBidder.save();
+      pubsub.publish(`WALLET_CHANGED ${oldBidder.id}`, {
+        walletChanged: oldBidder.wallet,
+      });
     }
 
     //pay for new bid
     const payUser = await User.findById(userCtx.id);
     payUser.wallet = payUser.wallet - bidPrice;
     await payUser.save();
+
+    pubsub.publish(`WALLET_CHANGED ${payUser.id}`, {
+      walletChanged: payUser.wallet,
+    });
 
     //create new bid infomation
     const newBidInfo = new Bid({
@@ -471,14 +486,15 @@ const Mutation = {
 
     //update product's current price
     product.price.current = bidPrice;
+    product.buyer = payUser.id;
 
     //update end time
     const timeDiff = product.end - currentTime;
     //timeDiff < 5m
     if (timeDiff < 300000) {
-      //product.end = product.end + 10m
+      //product.end = product.end + 15m
       const endTime = currentTime;
-      endTime.setMinutes(endTime.getMinutes() + 10);
+      endTime.setMinutes(endTime.getMinutes() + 15);
       product.end = endTime;
     }
 
@@ -486,6 +502,9 @@ const Mutation = {
 
     pubsub.publish(`BID_PLACED ${productId}`, {
       bidPlaced: { product: product, bidInfo: newBidInfo },
+    });
+    pubsub.publish(`PRODUCTS_CHANGED`, {
+      productsChanged: "Bid placed in products",
     });
 
     return newBidInfo;

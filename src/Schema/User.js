@@ -12,12 +12,14 @@ export const typeDef = gql`
     address: Address!
     products: [Product!]!
     watchlists: [Product!]!
+    auctionCount: AuctionData!
     wallet: Int!
     profile: String
     cover: String
     kyc: Kyc
     status: Status!
     role: Role!
+    join: ScalarDate!
   }
 
   type Name {
@@ -34,6 +36,12 @@ export const typeDef = gql`
   type Kyc {
     idCard: String
     photo: String
+  }
+
+  type AuctionData {
+    auctioning: Int
+    auctioned: Int
+    bidded: Int
   }
 
   enum Status {

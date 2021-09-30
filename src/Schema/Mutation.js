@@ -39,7 +39,6 @@ export const typeDef = gql`
       title: String!
       desc: String!
       initialPrice: Int!
-      status: ProductStatus!
       start: ScalarDate!
     ): Product!
     updateProduct(

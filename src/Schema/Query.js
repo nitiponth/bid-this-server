@@ -14,13 +14,12 @@ export const typeDef = gql`
 
     #Product Query
     getProducts(title: String): [Product!]!
+    getActivedProducts: [Product!]!
     getProductById(productId: ID!): Product!
+    getProductsByUserId(userId: ID!, filter: String): [Product!]!
     getOneProduct(title: String!): Product!
 
     #Comment Query
     getComments: [Comment!]!
-
-    #Upload Query
-    # uploadedFiles: [File]
   }
 `;

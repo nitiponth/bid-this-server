@@ -21,6 +21,16 @@ const Subscription = {
       return pubsub.asyncIterator(`BID_PLACED ${productId}`);
     },
   },
+  walletChanged: {
+    subscribe: async (parent, { userId }, ctx, info) => {
+      return pubsub.asyncIterator(`WALLET_CHANGED ${userId}`);
+    },
+  },
+  productsChanged: {
+    subscribe: async (parent, args, ctx, info) => {
+      return pubsub.asyncIterator("PRODUCTS_CHANGED");
+    },
+  },
 };
 
 export default Subscription;
