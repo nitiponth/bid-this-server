@@ -6,13 +6,19 @@ const product = mongoose.Schema(
     desc: { type: String, required: true },
     price: {
       initial: { type: Number, required: true },
+      bidOffer: { type: Number, required: true },
       current: { type: Number },
     },
     seller: { type: mongoose.Types.ObjectId, ref: "User", required: true },
     buyer: { type: mongoose.Types.ObjectId, ref: "User" },
     start: { type: Date, required: true },
     end: { type: Date, required: true },
+    category: { type: String, required: true },
+    condition: { type: String, required: true },
+    shipping: { type: String, required: true },
     status: { type: String, required: true },
+    images: [String],
+    policy: [String],
   },
   {
     timestamps: {

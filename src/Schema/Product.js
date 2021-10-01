@@ -11,13 +11,20 @@ export const typeDef = gql`
     bids: [Bid!]!
     start: ScalarDate!
     end: ScalarDate!
+    category: Category!
+    condition: String!
+    shipping: String!
     status: ProductStatus!
+    images: [String!]!
+    policy: [String!]!
+    createdAt: ScalarDate!
   }
 
   scalar ScalarDate
 
   type Price {
     initial: Int!
+    bidOffer: Int
     current: Int
   }
 
@@ -26,5 +33,12 @@ export const typeDef = gql`
     ACTIVED
     BIDDED
     BANNED
+  }
+
+  enum Category {
+    CLOTHING
+    ELECTRONICS
+    FIGURES
+    OTHERS
   }
 `;

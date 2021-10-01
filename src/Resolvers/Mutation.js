@@ -8,7 +8,6 @@ import jwt from "jsonwebtoken";
 import blacklist from "express-jwt-blacklist";
 
 import { pubsub } from "../utils/pubsub";
-import e from "cors";
 
 const Mutation = {
   //User Mutation
@@ -287,7 +286,18 @@ const Mutation = {
       throw new Error("You are not authenticated!");
     }
 
-    const { title, desc, initialPrice, start, status } = args;
+    const {
+      category,
+      title,
+      condition,
+      desc,
+      start,
+      initialPrice,
+      bidOffer,
+      images,
+      shipping,
+      policy,
+    } = args;
 
     const creatorId = userCtx.id;
 
@@ -301,7 +311,7 @@ const Mutation = {
 
     // if (start < limitTime) {
     //   throw new Error(
-    //     "The timer must be set at least 2 hours from the current time."
+    //     "The time must be set at least 2 hours from the current time."
     //   );
     // }
 
@@ -309,14 +319,20 @@ const Mutation = {
     endTime.setHours(endTime.getHours() + 1);
 
     const product = new Product({
+      category: category,
       title: title,
+      condition: condition,
       desc: desc,
-      price: {
-        initial: initialPrice,
-      },
-      seller: creatorId,
       start: start,
       end: endTime,
+      price: {
+        initial: initialPrice,
+        bidOffer: bidOffer,
+      },
+      images: images,
+      shipping: shipping,
+      policy: policy,
+      seller: creatorId,
       status: "ACTIVED",
     });
 
@@ -328,6 +344,8 @@ const Mutation = {
 
     // userExists.products.push(product.id);
     // await userExists.save();
+
+    console.log("created product: " + product.id);
 
     return product;
   },

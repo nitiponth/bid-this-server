@@ -36,10 +36,16 @@ export const typeDef = gql`
 
     # Product mutation
     createProduct(
+      category: Category!
       title: String!
+      condition: String!
       desc: String!
-      initialPrice: Int!
       start: ScalarDate!
+      initialPrice: Int!
+      bidOffer: Int!
+      images: [String!]!
+      shipping: String!
+      policy: [String!]!
     ): Product!
     updateProduct(
       productId: ID!
