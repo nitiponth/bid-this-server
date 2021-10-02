@@ -35,8 +35,7 @@ const Mutation = {
 
     return {
       token: token,
-      userId: user.id.toString(),
-      expired: new Date(expired * 1000),
+      user: user,
     };
   },
   logout: async (parent, args, { userCtx }, info) => {

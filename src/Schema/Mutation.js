@@ -76,9 +76,8 @@ export const typeDef = gql`
   }
 
   type userInformation {
-    token: String
-    userId: String
-    expired: ScalarDate
+    token: String!
+    user: User!
   }
 
   scalar ScalarDate
