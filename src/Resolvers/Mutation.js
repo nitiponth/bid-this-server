@@ -305,14 +305,14 @@ const Mutation = {
       throw new Error("User not found.");
     }
 
-    // const now = new Date();
-    // const limitTime = now.setHours(now.getHours() + 2);
+    const now = new Date();
+    const limitTime = now.setHours(now.getHours() + 2);
 
-    // if (start < limitTime) {
-    //   throw new Error(
-    //     "The time must be set at least 2 hours from the current time."
-    //   );
-    // }
+    if (start < limitTime) {
+      throw new Error(
+        "The time must be set at least 2 hours from the current time."
+      );
+    }
 
     const endTime = new Date(start);
     endTime.setHours(endTime.getHours() + 1);
@@ -349,7 +349,20 @@ const Mutation = {
     return product;
   },
   updateProduct: async (parent, args, { userCtx }, info) => {
-    const { productId, title, desc, initialPrice, start, status } = args;
+    const {
+      productId,
+      category,
+      title,
+      condition,
+      desc,
+      start,
+      initialPrice,
+      bidOffer,
+      images,
+      shipping,
+      policy,
+    } = args;
+
     const product = await Product.findById(productId);
     if (!product) {
       throw new Error("Product not found");
@@ -357,45 +370,64 @@ const Mutation = {
     if (product.seller.toString() !== userCtx.id.toString()) {
       throw new Error("Authorization failed");
     }
-    if (product.status === "BANNED") {
-      throw new Error("This product has been suspended.");
+    if (product.status !== "ACTIVED") {
+      throw new Error("Cant not edit on this product.");
     }
     if (product.price.current) {
       throw new Error(
         "The auction has started. Unable to edit product information"
       );
     }
-    if (product.start < new Date() + 3600000) {
+    const currentTime = new Date();
+    currentTime.setHours(currentTime.getHours() + 1);
+    if (product.start < currentTime) {
       throw new Error(
         "The auction time cannot be modified 1 hour before the auction time."
       );
     }
+    if (typeof category === "string") {
+      product.category = category;
+    }
     if (typeof title === "string" && title.trim() !== "") {
       product.title = title;
+    }
+    if (typeof condition === "string") {
+      product.condition = condition;
     }
     if (typeof desc === "string") {
       product.desc = desc;
     }
-    if (typeof initialPrice === "number") {
-      product.price.initial = initialPrice;
-    }
-    if (typeof status === "string") {
-      if (status !== "ACTIVED" && status !== "INACTIVED") {
-        throw new Error("Invalid status");
-      }
-      product.status = status;
-    }
-    if (typeof start === "object") {
-      if (start < new Date() + 3600000) {
+
+    if (start !== null) {
+      if (start < currentTime) {
         throw new Error(
           "The auction time must be adjusted at least 1 hour before the auction starts."
         );
       }
+
       product.start = start;
       const endTime = new Date(start);
       endTime.setHours(endTime.getHours() + 1);
       product.end = endTime;
     }
+
+    if (typeof initialPrice === "number") {
+      product.price.initial = initialPrice;
+    }
+    if (typeof bidOffer === "number") {
+      product.price.bidOffer = bidOffer;
+    }
+    if (images !== null) {
+      product.images = images;
+    }
+    if (typeof shipping === "string") {
+      product.shipping = shipping;
+    }
+    if (policy !== null) {
+      product.policy = policy;
+    }
+
+    console.log(`productId: ${product.id} is updated.`);
 
     return await product.save();
   },

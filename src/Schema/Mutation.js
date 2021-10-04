@@ -49,11 +49,16 @@ export const typeDef = gql`
     ): Product!
     updateProduct(
       productId: ID!
+      category: Category
       title: String
+      condition: String
+      start: ScalarDate
       desc: String
       initialPrice: Int
-      status: ProductStatus
-      start: ScalarDate
+      bidOffer: Int
+      images: [String]
+      shipping: String
+      policy: [String]
     ): Product!
     deleteProduct(productId: ID!): String
     adminUpdateProduct(
