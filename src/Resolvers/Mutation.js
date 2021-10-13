@@ -475,6 +475,10 @@ const Mutation = {
       throw new Error("This auction has ended.");
     }
 
+    if (product.start > currentTime) {
+      throw new Error("This auction has not start yet.");
+    }
+
     //Price check
     if (bidPrice < product.price.initial || bidPrice <= product.price.current) {
       throw new Error(
@@ -539,8 +543,8 @@ const Mutation = {
 
     //update end time
     const timeDiff = product.end - currentTime;
-    //timeDiff < 5m
-    if (timeDiff < 300000) {
+    //timeDiff < 10m
+    if (timeDiff < 600000) {
       //product.end = product.end + 15m
       const endTime = currentTime;
       endTime.setMinutes(endTime.getMinutes() + 15);

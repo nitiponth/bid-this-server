@@ -73,7 +73,7 @@ const Query = {
     const currentTime = new Date().toLocaleString("en-Us");
 
     const products = await Product.find({
-      start: { $lt: currentTime },
+      // start: { $lt: currentTime },
       end: { $gte: currentTime },
     });
     if (!products) {
@@ -106,7 +106,7 @@ const Query = {
     let products;
     if (!filter) {
       products = await Product.find({
-        start: { $lt: currentTime },
+        // start: { $lt: currentTime },
         end: { $gte: currentTime },
         seller: userId,
       });
