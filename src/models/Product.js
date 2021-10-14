@@ -16,6 +16,8 @@ const product = mongoose.Schema(
     category: { type: String, required: true },
     condition: { type: String, required: true },
     shipping: { type: String, required: true },
+    track: { type: String },
+    sentAt: { type: Date },
     status: { type: String, required: true },
     images: [String],
     policy: [String],

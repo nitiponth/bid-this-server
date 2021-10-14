@@ -14,6 +14,8 @@ export const typeDef = gql`
     category: Category!
     condition: String!
     shipping: String!
+    track: String
+    sentAt: ScalarDate
     status: ProductStatus!
     images: [String!]!
     policy: [String!]!
@@ -31,7 +33,7 @@ export const typeDef = gql`
   enum ProductStatus {
     INACTIVED
     ACTIVED
-    BIDDED
+    RECEIVED
     BANNED
   }
 

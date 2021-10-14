@@ -31,8 +31,6 @@ const Mutation = {
       }
     );
 
-    const expired = jwt.decode(token).exp;
-
     return {
       token: token,
       user: user,
@@ -431,19 +429,83 @@ const Mutation = {
 
     return await product.save();
   },
+  updateProductTrack: async (
+    parent,
+    { productId, track },
+    { userCtx },
+    info
+  ) => {
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error("Product not found.");
+    }
+    if (userCtx.id.toString() !== product.seller.toString()) {
+      throw new Error("Not authorized updated this product.");
+    }
+    if (product.end >= new Date()) {
+      throw new Error("This auction is not over yet.");
+    }
+    if (!product.buyer) {
+      throw new Error("There are no bidders for this product.");
+    }
+    if (track.length <= 5) {
+      throw new Error("tracking number is invalid");
+    }
+
+    const current = new Date();
+
+    product.track = track;
+    product.sentAt = current;
+
+    const result = await product.save();
+
+    return result;
+  },
   deleteProduct: async (parent, { productId }, { userCtx }, info) => {
     const product = await Product.findById(productId);
     if (!product) {
       throw new Error("Product not found.");
     }
     if (userCtx.id.toString() !== product.seller.toString()) {
-      throw new Error("Not authorized to delete this product");
+      throw new Error("Not authorized to delete this product.");
     }
     if (product.start < new Date()) {
       throw new Error("The auction has started. Unable to delete product.");
     }
     await Product.deleteOne({ _id: productId });
     return "Product deleted successfully.";
+  },
+  confirmProduct: async (parent, { productId }, { userCtx }, info) => {
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      throw new Error("Product not found.");
+    }
+    if (product.status !== "ACTIVED") {
+      throw new Error(
+        "Can not confirm on this product. Please contact support for help."
+      );
+    }
+    if (product.end > new Date()) {
+      throw new Error("This auction is not over yet.");
+    }
+    if (userCtx.id.toString() !== product.buyer.toString()) {
+      throw new Error("Not authorized to confirm this product.");
+    }
+
+    product.status = "RECEIVED";
+
+    const result = await product.save();
+
+    const seller = await User.findById(product.seller);
+    seller.wallet = seller.wallet + product.price.current;
+    await seller.save();
+
+    pubsub.publish(`WALLET_CHANGED ${seller.id}`, {
+      walletChanged: seller.wallet,
+    });
+
+    return result;
   },
   adminUpdateProduct: async (parent, args, { userCtx }, info) => {
     const { productId, title, desc, initialPrice, start, end, status } = args;

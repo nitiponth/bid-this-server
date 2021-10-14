@@ -61,6 +61,8 @@ export const typeDef = gql`
       policy: [String]
     ): Product!
     deleteProduct(productId: ID!): String
+    updateProductTrack(productId: ID!, track: String!): Product!
+    confirmProduct(productId: ID!): Product!
     adminUpdateProduct(
       productId: ID!
       title: String
@@ -76,8 +78,6 @@ export const typeDef = gql`
 
     # Comment Mutation
     createComment(productId: ID!, body: String!, score: Float!): Comment!
-
-    # Upload Mutation
   }
 
   type userInformation {
