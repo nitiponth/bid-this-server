@@ -19,6 +19,7 @@ export const typeDef = gql`
     status: ProductStatus!
     images: [String!]!
     policy: [String!]!
+    comment: Comment
     createdAt: ScalarDate!
   }
 

@@ -7,6 +7,7 @@ export const typeDef = gql`
     body: String!
     buyer: User!
     score: Float!
+    rImages: [String]
     createdAt: ScalarDate!
     updatedAt: ScalarDate!
   }

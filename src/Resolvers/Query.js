@@ -133,8 +133,8 @@ const Query = {
   },
 
   // Comment Query
-  getComments: async (parent, args, ctx, info) => {
-    const comments = await Comment.find();
+  getComments: async (parent, { productId }, ctx, info) => {
+    const comments = await Comment.findOne({ product: productId });
     return comments;
   },
 };

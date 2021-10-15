@@ -77,7 +77,12 @@ export const typeDef = gql`
     placeBid(productId: ID!, bidPrice: Int!): Bid!
 
     # Comment Mutation
-    createComment(productId: ID!, body: String!, score: Float!): Comment!
+    createComment(
+      productId: ID!
+      body: String!
+      score: Float!
+      rImages: [String]
+    ): Comment!
   }
 
   type userInformation {

@@ -1,6 +1,7 @@
 import { Product as ProductModel } from "../models/Product";
 import { User } from "../models/User";
 import { Bid } from "../models/Bid";
+import { Comment } from "../models/Comment";
 
 const Product = {
   seller: async (parent, args, ctx, info) => {
@@ -33,6 +34,10 @@ const Product = {
   },
   bids: async (parent, args, ctx, info) => {
     return await Bid.find({ product: parent.id });
+  },
+  comment: async (parent, args, ctx, info) => {
+    const comment = await Comment.findOne({ product: parent.id });
+    return comment;
   },
   createdAt: async (parent, args, ctx, info) => {
     const product = await ProductModel.findById(parent.id);

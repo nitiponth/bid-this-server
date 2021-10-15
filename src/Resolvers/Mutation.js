@@ -627,7 +627,7 @@ const Mutation = {
 
   // Comment mutaiton
   createComment: async (parent, args, { userCtx }, info) => {
-    const { productId, body, score } = args;
+    const { productId, body, score, rImages } = args;
 
     if (!userCtx) {
       throw new Error("You are not authenticated!");
@@ -662,12 +662,15 @@ const Mutation = {
       );
     }
 
+    console.log(rImages);
+
     let comment = await Comment.findOne({ product: productId });
     if (!comment) {
       comment = new Comment({
         product: productId,
         body: body,
         score: score,
+        rImages: rImages,
         buyer: product.buyer,
       });
     } else {
@@ -676,6 +679,9 @@ const Mutation = {
       }
       if (typeof score === "number") {
         comment.score = score;
+      }
+      if (images !== null || images.length !== 0) {
+        comment.rImages = rImages;
       }
     }
 

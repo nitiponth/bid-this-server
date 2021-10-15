@@ -20,6 +20,6 @@ export const typeDef = gql`
     getOneProduct(title: String!): Product!
 
     #Comment Query
-    getComments: [Comment!]!
+    getComments(productId: ID!): Comment
   }
 `;
