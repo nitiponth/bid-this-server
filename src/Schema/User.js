@@ -20,6 +20,8 @@ export const typeDef = gql`
     status: Status!
     role: Role!
     join: ScalarDate!
+    cards: [Card]!
+    transactions: [Transaction]!
   }
 
   type Name {
@@ -42,6 +44,19 @@ export const typeDef = gql`
     auctioning: Int
     auctioned: Int
     bidded: Int
+  }
+
+  type Card {
+    id: ID!
+    cardInfo: CardInfo
+  }
+
+  type CardInfo {
+    id: ID!
+    expiration_month: Int!
+    expiration_year: Int!
+    brand: String!
+    last_digits: String!
   }
 
   enum Status {

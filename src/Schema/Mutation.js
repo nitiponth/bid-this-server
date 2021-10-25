@@ -31,8 +31,6 @@ export const typeDef = gql`
       photo: String
     ): User!
     addToWatchlists(productId: ID!): User!
-    depositCredit(value: Int!): User!
-    withdrawCredit(value: Int!): User!
 
     # Product mutation
     createProduct(
@@ -83,6 +81,10 @@ export const typeDef = gql`
       score: Float!
       rImages: [String]
     ): Comment!
+
+    # Transaction Mutation
+    depositCredit(cardId: String, token: String, amount: Int!): Transaction!
+    withdrawCredit(token: String, amount: Int!): Transaction!
   }
 
   type userInformation {

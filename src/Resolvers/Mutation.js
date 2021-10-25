@@ -2,12 +2,19 @@ import { User } from "../models/User";
 import { Product } from "../models/Product";
 import { Bid } from "../models/Bid";
 import { Comment } from "../models/Comment";
+import { Transaction } from "../models/Transaction";
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import blacklist from "express-jwt-blacklist";
 
 import { pubsub } from "../utils/pubsub";
+
+import {
+  retrieveCustomer,
+  createCustomer,
+  createCharge,
+} from "../utils/omiseUtils";
 
 const Mutation = {
   //User Mutation
@@ -237,7 +244,12 @@ const Mutation = {
 
     return await user.save();
   },
-  depositCredit: async (parent, { value }, { userCtx }, info) => {
+  depositCredit: async (
+    parent,
+    { cardId, token, amount },
+    { userCtx },
+    info
+  ) => {
     if (!userCtx) {
       throw new Error("You are not authenticated!");
     }
@@ -249,15 +261,67 @@ const Mutation = {
       throw new Error("User has been suspended.");
     }
 
-    user.wallet = user.wallet + value;
+    let customer;
+    //customer use exist card
+    if (cardId && !token) {
+      const cust = await retrieveCustomer(cardId);
+      if (!cust) {
+        throw new Error("Can not process payment with this card.");
+      }
+
+      customer = cust;
+    }
+
+    //customer use new card
+    if (token && !cardId) {
+      const userFullname = user.name.first + " " + user.name.last;
+      const newCustomer = await createCustomer(user.email, userFullname, token);
+      if (!newCustomer) {
+        throw new Error("Can not process payment, please try again.");
+      }
+      customer = newCustomer;
+
+      const { id, expiration_month, expiration_year, brand, last_digits } =
+        newCustomer.cards.data[0];
+
+      user.cards.push({
+        id: newCustomer.id,
+        cardInfo: {
+          id,
+          expiration_month,
+          expiration_year,
+          brand,
+          last_digits,
+        },
+      });
+
+      await user.save();
+    }
+
+    const charge = await createCharge(amount * 100, customer.id);
+    if (!charge) {
+      throw new Error("Something went wrong with payment, please try again.");
+    }
+
+    const transaction = new Transaction({
+      user: user.id,
+      amount: amount,
+      type: "DEPOSIT",
+    });
+
+    const res = await transaction.save();
+
+    user.wallet = user.wallet + amount;
 
     pubsub.publish(`WALLET_CHANGED ${userCtx.id}`, {
       walletChanged: user.wallet,
     });
 
-    return await user.save();
+    await user.save();
+
+    return res;
   },
-  withdrawCredit: async (parent, { value }, { userCtx }, info) => {
+  withdrawCredit: async (parent, { token, amount }, { userCtx }, info) => {
     if (!userCtx) {
       throw new Error("You are not authenticated!");
     }
@@ -269,7 +333,7 @@ const Mutation = {
       throw new Error("User has been suspended.");
     }
 
-    user.wallet = user.wallet + value;
+    user.wallet = user.wallet + amount;
     pubsub.publish(`WALLET_CHANGED ${userCtx.id}`, {
       walletChanged: user.wallet,
     });
@@ -661,8 +725,6 @@ const Mutation = {
         "Only the buyer has the right to comment on this product."
       );
     }
-
-    console.log(rImages);
 
     let comment = await Comment.findOne({ product: productId });
     if (!comment) {

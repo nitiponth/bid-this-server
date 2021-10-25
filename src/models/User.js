@@ -26,6 +26,18 @@ const user = mongoose.Schema(
     },
     status: { type: String, required: true },
     role: { type: String, required: true },
+    cards: [
+      {
+        id: String,
+        cardInfo: {
+          id: String,
+          expiration_month: Number,
+          expiration_year: Number,
+          brand: String,
+          last_digits: String,
+        },
+      },
+    ],
   },
   {
     timestamps: {
