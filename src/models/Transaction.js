@@ -4,6 +4,7 @@ const transaction = mongoose.Schema({
   user: { type: mongoose.Types.ObjectId, ref: "User", require: true },
   amount: { type: Number, required: true },
   type: { type: String, required: true },
+  status: { type: Boolean, required: true },
   createdAt: {
     type: Date,
     required: true,

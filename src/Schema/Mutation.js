@@ -84,7 +84,10 @@ export const typeDef = gql`
 
     # Transaction Mutation
     depositCredit(cardId: String, token: String, amount: Int!): Transaction!
-    withdrawCredit(token: String, amount: Int!): Transaction!
+
+    createRep(name: String!, brand: String!, number: String!): String
+    updateRepActive: String
+    withdrawCredit(bankId: String!, amount: Int!): Transaction!
   }
 
   type userInformation {

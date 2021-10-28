@@ -14,6 +14,9 @@ import {
   retrieveCustomer,
   createCustomer,
   createCharge,
+  createRecipient,
+  retrieveRecipient,
+  createTransfer,
 } from "../utils/omiseUtils";
 
 const Mutation = {
@@ -307,6 +310,7 @@ const Mutation = {
       user: user.id,
       amount: amount,
       type: "DEPOSIT",
+      status: true,
     });
 
     const res = await transaction.save();
@@ -321,7 +325,8 @@ const Mutation = {
 
     return res;
   },
-  withdrawCredit: async (parent, { token, amount }, { userCtx }, info) => {
+
+  createRep: async (parent, { name, brand, number }, { userCtx }, info) => {
     if (!userCtx) {
       throw new Error("You are not authenticated!");
     }
@@ -333,12 +338,103 @@ const Mutation = {
       throw new Error("User has been suspended.");
     }
 
-    user.wallet = user.wallet + amount;
+    let recipient;
+    recipient = await createRecipient(name, user.email, brand, number);
+
+    if (!recipient) {
+      throw new Error("Create Recipient Error.");
+    }
+
+    user.bankAccounts.push({
+      id: recipient.id,
+      bankInfo: {
+        id: recipient.id,
+        brand: recipient.bank_account.bank_code,
+        last_digits: recipient.bank_account.last_digits,
+        name: recipient.bank_account.name,
+        active: recipient.active,
+      },
+    });
+
+    await user.save();
+
+    return "adding book account successfully.";
+  },
+  updateRepActive: async (parent, args, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+    if (user.bankAccounts.length === 0) {
+      return "No bank account for update";
+    }
+
+    const bankAccs = user.bankAccounts;
+    let isUpdated = false;
+
+    for (const [idx, bankData] of bankAccs.entries()) {
+      if (bankData.bankInfo.active) {
+        continue;
+      }
+      const data = await retrieveRecipient(bankData.id);
+      if (data && data.active) {
+        user.bankAccounts[idx].bankInfo.active = true;
+        isUpdated = true;
+      }
+    }
+    if (!isUpdated) {
+      return 100;
+    }
+
+    await user.save();
+    return 200;
+  },
+  withdrawCredit: async (parent, { bankId, amount }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+    if (user.status === "BANNED") {
+      throw new Error("User has been suspended.");
+    }
+
+    if (amount > user.wallet) {
+      throw new Error("User balance is insufficient.");
+    }
+
+    let bankAccount;
+    bankAccount = await retrieveRecipient(bankId);
+    if (!bankAccount) {
+      throw new Error("Bank account not found, Please check the correctness.");
+    }
+
+    const transfer = await createTransfer(amount * 100, bankId);
+    if (!transfer) {
+      throw new Error("Someting went wrong with transfer, Please try agian.");
+    }
+
+    const transaction = new Transaction({
+      user: user.id,
+      amount: amount,
+      type: "WITHDRAW",
+      status: transfer.sent,
+    });
+
+    const res = await transaction.save();
+
+    user.wallet = user.wallet - amount;
+    await user.save();
     pubsub.publish(`WALLET_CHANGED ${userCtx.id}`, {
       walletChanged: user.wallet,
     });
 
-    return await user.save();
+    return res;
   },
 
   //Product Mutation

@@ -38,6 +38,18 @@ const user = mongoose.Schema(
         },
       },
     ],
+    bankAccounts: [
+      {
+        id: String,
+        bankInfo: {
+          id: String,
+          brand: String,
+          last_digits: Number,
+          name: String,
+          active: Boolean,
+        },
+      },
+    ],
   },
   {
     timestamps: {

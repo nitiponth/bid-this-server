@@ -1,4 +1,5 @@
 require("dotenv").config();
+import e from "cors";
 import OmiseFn from "omise";
 
 const omise = OmiseFn({
@@ -56,5 +57,57 @@ export const createCharge = (amount, customer) => {
         }
       }
     );
+  });
+};
+
+export const createRecipient = (name, email, brand, number) => {
+  const upperCaseName = name.toUpperCase();
+  return new Promise((resolve, reject) => {
+    omise.recipients.create(
+      {
+        name: name,
+        email: email,
+        type: "individual",
+        bank_account: {
+          brand: brand,
+          number: number,
+          name: upperCaseName,
+        },
+      },
+      function (err, resp) {
+        if (resp) {
+          resolve(resp);
+        } else {
+          console.log("createRecipient Error: ", err);
+          resolve(null);
+        }
+      }
+    );
+  });
+};
+
+export const retrieveRecipient = (id) => {
+  return new Promise((resolve, reject) => {
+    omise.recipients.retrieve(id, function (err, resp) {
+      if (resp) {
+        resolve(resp);
+      } else {
+        console.log("retrieveRecipient Error: ", err);
+        resolve(null);
+      }
+    });
+  });
+};
+
+export const createTransfer = (amount, recipient) => {
+  return new Promise((resolve, reject) => {
+    omise.transfers.create({ amount, recipient }, function (error, transfer) {
+      if (transfer) {
+        resolve(transfer);
+      } else {
+        console.log("createTransfer Error: ", err);
+        resolve(null);
+      }
+    });
   });
 };

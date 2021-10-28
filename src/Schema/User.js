@@ -22,6 +22,7 @@ export const typeDef = gql`
     join: ScalarDate!
     cards: [Card]!
     transactions: [Transaction]!
+    bankAccounts: [Bank]
   }
 
   type Name {
@@ -57,6 +58,19 @@ export const typeDef = gql`
     expiration_year: Int!
     brand: String!
     last_digits: String!
+  }
+
+  type Bank {
+    id: ID!
+    bankInfo: BankInfo
+  }
+
+  type BankInfo {
+    id: ID!
+    brand: String!
+    last_digits: String!
+    name: String!
+    active: Boolean!
   }
 
   enum Status {

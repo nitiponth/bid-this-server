@@ -5,6 +5,7 @@ export const typeDef = gql`
     id: ID!
     user: User!
     amount: Int!
+    status: Boolean
     createdAt: ScalarDate!
     type: TransactionType
   }
