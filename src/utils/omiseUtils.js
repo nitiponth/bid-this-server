@@ -111,3 +111,16 @@ export const createTransfer = (amount, recipient) => {
     });
   });
 };
+
+export const retrieveTransaction = (id) => {
+  return new Promise((resolve, reject) => {
+    omise.transfers.retrieve(id, function (err, resp) {
+      if (resp) {
+        resolve(resp);
+      } else {
+        console.log("retrieveTransaction Error: ", err);
+        resolve(null);
+      }
+    });
+  });
+};

@@ -1,6 +1,7 @@
 import { User } from "../models/User";
 import { Product } from "../models/Product";
 import { Comment } from "../models/Comment";
+import { Transaction } from "../models/Transaction";
 import mongoose from "mongoose";
 
 const Query = {
@@ -136,6 +137,12 @@ const Query = {
   getComments: async (parent, { productId }, ctx, info) => {
     const comments = await Comment.findOne({ product: productId });
     return comments;
+  },
+
+  // Transaction Query
+  getTransactionsByUserId: async (parent, args, { userCtx }, info) => {
+    const transactions = await Transaction.find({ user: userCtx.id });
+    return transactions;
   },
 };
 

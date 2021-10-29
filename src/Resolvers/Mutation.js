@@ -17,6 +17,7 @@ import {
   createRecipient,
   retrieveRecipient,
   createTransfer,
+  retrieveTransaction,
 } from "../utils/omiseUtils";
 
 const Mutation = {
@@ -307,6 +308,7 @@ const Mutation = {
     }
 
     const transaction = new Transaction({
+      tranId: charge.id,
       user: user.id,
       amount: amount,
       type: "DEPOSIT",
@@ -420,6 +422,7 @@ const Mutation = {
     }
 
     const transaction = new Transaction({
+      tranId: transfer.id,
       user: user.id,
       amount: amount,
       type: "WITHDRAW",
@@ -636,6 +639,7 @@ const Mutation = {
     return "Product deleted successfully.";
   },
   confirmProduct: async (parent, { productId }, { userCtx }, info) => {
+    //Customer confirm when recieve product.
     const product = await Product.findById(productId);
 
     if (!product) {
@@ -657,9 +661,35 @@ const Mutation = {
 
     const result = await product.save();
 
+    const transaction = new Transaction({
+      user: userCtx.id,
+      amount: product.price.current,
+      type: "BUY",
+      status: true,
+      product: product.id,
+    });
+
+    const transResult = await transaction.save();
+    if (!transResult) {
+      throw new Error("Create transaction failed.");
+    }
+
     const seller = await User.findById(product.seller);
     seller.wallet = seller.wallet + product.price.current;
     await seller.save();
+
+    const sellerTransaction = new Transaction({
+      user: product.seller,
+      amount: product.price.current,
+      type: "SELL",
+      status: true,
+      product: product.id,
+    });
+
+    const tranSellResult = await sellerTransaction.save();
+    if (!tranSellResult) {
+      throw new Error("Create seller transaction failed.");
+    }
 
     pubsub.publish(`WALLET_CHANGED ${seller.id}`, {
       walletChanged: seller.wallet,
@@ -844,6 +874,36 @@ const Mutation = {
     }
 
     return await comment.save();
+  },
+
+  // Transaction Query
+  updateAndGetTransactions: async (parent, args, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+    const transactions = await Transaction.find({ user: userCtx.id });
+
+    if (transactions.length === 0) {
+      return transactions;
+    }
+
+    for (const [idx, transaction] of transactions.entries()) {
+      if (transaction.status || transaction.type !== "WITHDRAW") {
+        continue;
+      }
+
+      const data = await retrieveTransaction(transaction.tranId);
+      if (data && data.sent && data.paid) {
+        transaction.status = data.sent;
+        await transaction.save();
+      }
+    }
+
+    return transactions;
   },
 };
 

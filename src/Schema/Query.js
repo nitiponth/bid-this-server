@@ -21,5 +21,8 @@ export const typeDef = gql`
 
     #Comment Query
     getComments(productId: ID!): Comment
+
+    #Transaction Query
+    getTransactionsByUserId: [Transaction]!
   }
 `;

@@ -23,6 +23,7 @@ import Product from "./Resolvers/Product";
 import Bid from "./Resolvers/Bid";
 import Comment from "./Resolvers/Comment";
 import Subscription from "./Resolvers/Subscription";
+import Transaction from "./Resolvers/Transaction";
 
 import xjwt from "express-jwt";
 import blacklist from "express-jwt-blacklist";
@@ -67,6 +68,7 @@ const startServer = async () => {
       Bid,
       Comment,
       Subscription,
+      Transaction,
     },
   });
 

@@ -88,6 +88,8 @@ export const typeDef = gql`
     createRep(name: String!, brand: String!, number: String!): String
     updateRepActive: String
     withdrawCredit(bankId: String!, amount: Int!): Transaction!
+
+    updateAndGetTransactions: [Transaction]!
   }
 
   type userInformation {

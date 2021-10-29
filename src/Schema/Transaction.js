@@ -3,11 +3,13 @@ import { gql } from "apollo-server-express";
 export const typeDef = gql`
   type Transaction {
     id: ID!
+    tranId: String
     user: User!
     amount: Int!
-    status: Boolean
+    product: Product
+    status: Boolean!
     createdAt: ScalarDate!
-    type: TransactionType
+    type: TransactionType!
   }
 
   enum TransactionType {
