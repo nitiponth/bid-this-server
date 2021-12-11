@@ -80,7 +80,12 @@ const Query = {
     if (!products) {
       throw new Error("Product not found.");
     }
-    return products;
+
+    const productsList = products.filter(
+      (product) => product.status === "ACTIVED"
+    );
+
+    return productsList;
   },
   getProductById: async (parent, args, ctx, info) => {
     const { productId } = args;

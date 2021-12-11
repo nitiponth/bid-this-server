@@ -440,6 +440,36 @@ const Mutation = {
     return res;
   },
 
+  //Admin User Mutation
+  adminChangeUserStatus: async (
+    parent,
+    { userId, newStatus },
+    { userCtx },
+    info
+  ) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    const admin = await User.findById(userCtx.id);
+    if (!admin) {
+      throw new Error("User not found!");
+    }
+    if (admin.role !== "ADMIN") {
+      throw new Error("You are not Unauthorized.");
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found!");
+    }
+
+    user.status = newStatus;
+    await user.save();
+
+    return user;
+  },
+
   //Product Mutation
   createProduct: async (parent, args, { userCtx }, info) => {
     if (!userCtx) {
@@ -697,6 +727,8 @@ const Mutation = {
 
     return result;
   },
+
+  //admin Product mutation
   adminUpdateProduct: async (parent, args, { userCtx }, info) => {
     const { productId, title, desc, initialPrice, start, end, status } = args;
 
@@ -708,6 +740,39 @@ const Mutation = {
     product.end = end;
 
     return await product.save();
+  },
+
+  adminDeactiveProduct: async (parent, { productId }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+    if (user.role !== "ADMIN") {
+      throw new Error("You are Unauthorized");
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error("Product not found.");
+    }
+
+    if (new Date().toISOString() > new Date(product.start).toISOString()) {
+      //refund last bid
+
+      //or define to can't change status
+      throw new Error(
+        "This product has already begun bidding. Can not change status"
+      );
+    }
+
+    product.status = "BANNED";
+    await product.save();
+
+    return product;
   },
 
   // Bid Mutation

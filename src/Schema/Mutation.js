@@ -32,6 +32,9 @@ export const typeDef = gql`
     ): User!
     addToWatchlists(productId: ID!): User!
 
+    # Admin User mutation
+    adminChangeUserStatus(userId: ID!, newStatus: String!): User!
+
     # Product mutation
     createProduct(
       category: Category!
@@ -61,6 +64,8 @@ export const typeDef = gql`
     deleteProduct(productId: ID!): String
     updateProductTrack(productId: ID!, track: String!): Product!
     confirmProduct(productId: ID!): Product!
+
+    # admin product mutation
     adminUpdateProduct(
       productId: ID!
       title: String
@@ -70,6 +75,8 @@ export const typeDef = gql`
       start: ScalarDate
       end: ScalarDate
     ): Product!
+
+    adminDeactiveProduct(productId: ID!): Product!
 
     # Bid Mutation
     placeBid(productId: ID!, bidPrice: Int!): Bid!
