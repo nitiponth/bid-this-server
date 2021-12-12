@@ -219,7 +219,7 @@ const Mutation = {
 
     return user;
   },
-  addToWatchlists: async (parent, { productId }, { userCtx }, info) => {
+  addToWatchlists: async (parent, { watchedArr }, { userCtx }, info) => {
     if (!userCtx) {
       throw new Error("You are not authenticated!");
     }
@@ -229,22 +229,26 @@ const Mutation = {
       throw new Error("User not found.");
     }
 
-    const product = await Product.findById(productId);
-    if (!product) {
-      throw new Error("This product is not exists.");
-    }
+    // const product = await Product.findById(productId);
+    // if (!product) {
+    //   throw new Error("This product is not exists.");
+    // }
 
-    const productIsActived = product.status === "ACTIVED";
-    if (!productIsActived) {
-      throw new Error("This product is not Actived.");
-    }
+    // const productIsActived = product.status === "ACTIVED";
+    // if (!productIsActived) {
+    //   throw new Error("This product is not Actived.");
+    // }
 
-    const productIdx = user.watchlists.indexOf(productId);
-    if (productIdx == -1) {
-      user.watchlists.push(productId);
-    } else {
-      user.watchlists.splice(productIdx, 1);
-    }
+    // const productIdx = user.watchlists.indexOf(productId);
+    // if (productIdx == -1) {
+    //   user.watchlists.push(productId);
+    // } else {
+    //   user.watchlists.splice(productIdx, 1);
+    // }
+
+    user.watchlists = watchedArr;
+
+    console.log(user.username, user.watchlists);
 
     return await user.save();
   },

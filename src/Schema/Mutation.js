@@ -30,7 +30,7 @@ export const typeDef = gql`
       idCard: String
       photo: String
     ): User!
-    addToWatchlists(productId: ID!): User!
+    addToWatchlists(watchedArr: [ID]!): User!
 
     # Admin User mutation
     adminChangeUserStatus(userId: ID!, newStatus: String!): User!
