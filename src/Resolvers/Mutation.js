@@ -154,6 +154,13 @@ const Mutation = {
         throw new Error("This username has already been used.");
       }
 
+      if (username.trim() === "") {
+        throw new Error("Username can not be space.");
+      }
+
+      if (username.trim().toLocaleLowerCase().includes("admin")) {
+        throw new Error("Username not allow to includes word like admin.");
+      }
       user.username = username;
     }
 
