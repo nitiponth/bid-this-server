@@ -3,6 +3,8 @@ import { Product } from "../models/Product";
 import { Bid } from "../models/Bid";
 import { Comment } from "../models/Comment";
 import { Transaction } from "../models/Transaction";
+import { ReportedUser } from "../models/ReportedUser";
+import { ReportedProduct } from "../models/ReportedProduct";
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -451,6 +453,32 @@ const Mutation = {
     return res;
   },
 
+  reportUser: async (parent, { userId, body }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found!");
+    }
+
+    const reportedUser = new ReportedUser({
+      user: user.id,
+      reportBy: userCtx.id,
+      body: body,
+      reportStatus: "RECEIVED",
+    });
+
+    await reportedUser.save();
+
+    console.log(
+      `user ID: ${reportedUser.user} reported by ${reportedUser.reportBy}`
+    );
+
+    return "The request has been received.";
+  },
+
   //Admin User Mutation
   adminChangeUserStatus: async (
     parent,
@@ -737,6 +765,32 @@ const Mutation = {
     });
 
     return result;
+  },
+
+  reportProduct: async (parent, { productId, body }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error("User not found!");
+    }
+
+    const reportedProduct = new ReportedProduct({
+      product: product.id,
+      reportBy: userCtx.id,
+      body: body,
+      reportStatus: "RECEIVED",
+    });
+
+    await reportedProduct.save();
+
+    console.log(
+      `Product ID: ${reportedProduct.user} reported by ${reportedProduct.reportBy}`
+    );
+
+    return "The request has been received.";
   },
 
   //admin Product mutation

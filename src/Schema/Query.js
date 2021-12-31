@@ -24,5 +24,9 @@ export const typeDef = gql`
 
     #Transaction Query
     getTransactionsByUserId: [Transaction]!
+
+    #Report Query
+    getReportedUsers: [ReportedUser]!
+    getReportedProducts: [ReportedProduct]!
   }
 `;

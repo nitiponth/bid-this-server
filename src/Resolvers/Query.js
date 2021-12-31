@@ -2,6 +2,8 @@ import { User } from "../models/User";
 import { Product } from "../models/Product";
 import { Comment } from "../models/Comment";
 import { Transaction } from "../models/Transaction";
+import { ReportedUser } from "../models/ReportedUser";
+import { ReportedProduct } from "../models/ReportedProduct";
 import mongoose from "mongoose";
 
 const Query = {
@@ -148,6 +150,18 @@ const Query = {
   getTransactionsByUserId: async (parent, args, { userCtx }, info) => {
     const transactions = await Transaction.find({ user: userCtx.id });
     return transactions;
+  },
+
+  // Report Query
+  getReportedUsers: async (parent, args, ctx, info) => {
+    const reportedUsers = await ReportedUser.find();
+    console.log(reportedUsers);
+    return reportedUsers;
+  },
+
+  getReportedProducts: async (parent, args, ctx, info) => {
+    const reportedProducts = await ReportedProduct.find();
+    return reportedProducts;
   },
 };
 
