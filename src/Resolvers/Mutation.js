@@ -787,7 +787,7 @@ const Mutation = {
     await reportedProduct.save();
 
     console.log(
-      `Product ID: ${reportedProduct.user} reported by ${reportedProduct.reportBy}`
+      `Product ID: ${reportedProduct.product} reported by ${reportedProduct.reportBy}`
     );
 
     return "The request has been received.";

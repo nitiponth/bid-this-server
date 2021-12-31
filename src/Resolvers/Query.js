@@ -155,7 +155,6 @@ const Query = {
   // Report Query
   getReportedUsers: async (parent, args, ctx, info) => {
     const reportedUsers = await ReportedUser.find();
-    console.log(reportedUsers);
     return reportedUsers;
   },
 
