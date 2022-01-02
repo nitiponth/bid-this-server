@@ -101,6 +101,18 @@ export const typeDef = gql`
     withdrawCredit(bankId: String!, amount: Int!): Transaction!
 
     updateAndGetTransactions: [Transaction]!
+
+    # Admin Report Mutation
+    updateReportStatus(
+      reportId: ID!
+      type: ReportType!
+      newStatus: ReportStatus!
+    ): String!
+  }
+
+  enum ReportType {
+    User
+    Product
   }
 
   type userInformation {

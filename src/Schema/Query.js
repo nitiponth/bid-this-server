@@ -29,7 +29,7 @@ export const typeDef = gql`
     getReportedUsers: [ReportedUser]!
     getReportedProducts: [ReportedProduct]!
 
-    getReportUser(reportId: ID!): ReportedProduct!
-    getReportProduct(reportId: ID!): ReportedUser!
+    getReportUser(reportId: ID!): ReportedUser!
+    getReportProduct(reportId: ID!): ReportedProduct!
   }
 `;

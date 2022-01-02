@@ -1035,6 +1035,46 @@ const Mutation = {
 
     return transactions;
   },
+
+  // Admin Report Mutation
+  updateReportStatus: async (
+    parent,
+    { reportId, type, newStatus },
+    { userCtx },
+    info
+  ) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("You are unauthorized.");
+    }
+
+    if (user.role !== "ADMIN") {
+      throw new Error("You are unauthorized.");
+    }
+
+    let reportData;
+
+    if (type === "User") {
+      reportData = await ReportedUser.findById(reportId);
+    } else if (type === "Product") {
+      reportData = await ReportedProduct.findById(reportId);
+    }
+
+    if (!reportData) {
+      throw new Error("Report not found");
+    }
+
+    reportData.reportStatus = newStatus;
+
+    await reportData.save();
+
+    console.log(`update report ${reportData.id} sucessfully.`);
+
+    return "Done.";
+  },
 };
 
 export default Mutation;

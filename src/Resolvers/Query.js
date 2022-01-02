@@ -165,11 +165,17 @@ const Query = {
 
   getReportUser: async (parent, { reportId }, { userCtx }, info) => {
     const reportedUser = await ReportedUser.findById(reportId);
+    if (!reportedUser) {
+      throw new Error("Report Not Found.");
+    }
     return reportedUser;
   },
 
   getReportProduct: async (parent, { reportId }, { userCtx }, info) => {
     const reportedProduct = await ReportedProduct.findById(reportId);
+    if (!reportedProduct) {
+      throw new Error("Report Not Found.");
+    }
     return reportedProduct;
   },
 };

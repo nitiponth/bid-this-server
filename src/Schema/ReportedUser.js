@@ -6,11 +6,11 @@ export const typeDef = gql`
     user: User!
     reportBy: User!
     body: String!
-    reportStatus: ReportUserStatus!
+    reportStatus: ReportStatus!
     createdAt: ScalarDate
   }
 
-  enum ReportUserStatus {
+  enum ReportStatus {
     RECEIVED
     CHECKING
     DONE

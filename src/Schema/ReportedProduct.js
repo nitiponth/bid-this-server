@@ -6,14 +6,8 @@ export const typeDef = gql`
     product: Product!
     reportBy: User!
     body: String!
-    reportStatus: ReportProductStatus!
+    reportStatus: ReportStatus!
     createdAt: ScalarDate
-  }
-
-  enum ReportProductStatus {
-    RECEIVED
-    CHECKING
-    DONE
   }
 
   scalar ScalarDate
