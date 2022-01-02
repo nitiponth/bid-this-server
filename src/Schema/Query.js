@@ -28,5 +28,8 @@ export const typeDef = gql`
     #Report Query
     getReportedUsers: [ReportedUser]!
     getReportedProducts: [ReportedProduct]!
+
+    getReportUser(reportId: ID!): ReportedProduct!
+    getReportProduct(reportId: ID!): ReportedUser!
   }
 `;

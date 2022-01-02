@@ -162,6 +162,16 @@ const Query = {
     const reportedProducts = await ReportedProduct.find();
     return reportedProducts;
   },
+
+  getReportUser: async (parent, { reportId }, { userCtx }, info) => {
+    const reportedUser = await ReportedUser.findById(reportId);
+    return reportedUser;
+  },
+
+  getReportProduct: async (parent, { reportId }, { userCtx }, info) => {
+    const reportedProduct = await ReportedProduct.findById(reportId);
+    return reportedProduct;
+  },
 };
 
 export default Query;
