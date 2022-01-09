@@ -308,7 +308,6 @@ const Mutation = {
         throw new Error("Can not process payment, please try again.");
       }
       customer = newCustomer;
-      console.log(newCustomer.cards);
 
       const { id, expiration_month, expiration_year, brand, last_digits } =
         newCustomer.cards.data[0];
@@ -351,6 +350,8 @@ const Mutation = {
     });
 
     await user.save();
+
+    console.log(`user ${user.id} deposit ${amount} successfully.`);
 
     return res;
   },
