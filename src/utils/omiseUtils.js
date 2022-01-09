@@ -63,6 +63,19 @@ export const createCustomer = (email, desc, card) => {
   });
 };
 
+export const destroyCard = (custId, cardId) => {
+  return new Promise((resolve, reject) => {
+    omise.customers.destroyCard(custId, cardId, function (err, res) {
+      if (res) {
+        resolve(res);
+      } else {
+        console.log(err);
+        resolve(null);
+      }
+    });
+  });
+};
+
 export const createCharge = (amount, customer) => {
   return new Promise((resolve, reject) => {
     omise.charges.create(
@@ -106,6 +119,19 @@ export const createRecipient = (name, email, brand, number) => {
         }
       }
     );
+  });
+};
+
+export const destroyRecipient = (reptId) => {
+  return new Promise((resolve, reject) => {
+    omise.recipients.destroy(reptId, function (err, resp) {
+      if (resp) {
+        resolve(resp);
+      } else {
+        console.log("createRecipient Error: ", err);
+        resolve(null);
+      }
+    });
   });
 };
 

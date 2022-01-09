@@ -21,6 +21,8 @@ import {
   createTransfer,
   retrieveTransaction,
   createToken,
+  destroyCard,
+  destroyRecipient,
 } from "../utils/omiseUtils";
 
 const Mutation = {
@@ -467,6 +469,70 @@ const Mutation = {
     });
 
     return res;
+  },
+
+  removeCard: async (parent, { custId }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    const customer = user.cards.find((card) => card.id === custId);
+    if (!customer) {
+      throw new Error("Customer ID not found.");
+    }
+
+    const result = await destroyCard(customer.id, customer.cardInfo.id);
+
+    if (result) {
+      console.log(`destroy card of customer ${customer.id}.`);
+    } else {
+      throw new Error("Destroy card failed. Please contact admin.");
+    }
+
+    const updatedCardsArray = user.cards.filter((card) => card.id !== custId);
+
+    user.cards = updatedCardsArray;
+    await user.save();
+
+    return "done.";
+  },
+
+  removeRecipient: async (parent, { reptId }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    const recipient = user.bankAccounts.find((rept) => rept.id === reptId);
+    if (!recipient) {
+      throw new Error("Recipient not found.");
+    }
+
+    const result = await destroyRecipient(recipient.id);
+
+    if (result) {
+      console.log(`destroy recipient ID ${recipient.id}.`);
+    } else {
+      throw new Error("Destroy recipient failed. Please contact admin.");
+    }
+
+    const updatedReptArray = user.bankAccounts.filter(
+      (rept) => rept.id !== reptId
+    );
+
+    user.bankAccounts = updatedReptArray;
+    await user.save();
+
+    return "done.";
   },
 
   reportUser: async (parent, { userId, body }, { userCtx }, info) => {

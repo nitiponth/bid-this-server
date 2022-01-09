@@ -107,6 +107,9 @@ export const typeDef = gql`
 
     updateAndGetTransactions: [Transaction]!
 
+    removeCard(custId: String!): String
+    removeRecipient(reptId: String!): String
+
     # Admin Report Mutation
     updateReportStatus(
       reportId: ID!
