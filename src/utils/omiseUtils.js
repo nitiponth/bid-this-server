@@ -1,11 +1,34 @@
 require("dotenv").config();
-import e from "cors";
 import OmiseFn from "omise";
 
 const omise = OmiseFn({
   publicKey: process.env.OMISE_PUBLIC_KEY,
   secretKey: process.env.OMISE_SECRET_KEY,
 });
+
+export const createToken = (name, number, expMonth, expYear, cvc) => {
+  if (!number || !name || !expMonth || !expMonth | !cvc) return null;
+  return new Promise((resolve, reject) => {
+    omise.tokens.create(
+      {
+        card: {
+          name,
+          number,
+          cvc,
+          expiration_month: expMonth,
+          expiration_year: expYear,
+        },
+      },
+      function (err, res) {
+        if (res) {
+          resolve(res);
+        } else {
+          resolve(null);
+        }
+      }
+    );
+  });
+};
 
 export const retrieveCustomer = (id) => {
   if (!id) return null;

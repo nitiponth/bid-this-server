@@ -94,7 +94,12 @@ export const typeDef = gql`
     ): Comment!
 
     # Transaction Mutation
-    depositCredit(cardId: String, token: String, amount: Int!): Transaction!
+    depositCredit(
+      cardId: String
+      paymentInfo: PaymentInfo
+      save: Boolean
+      amount: Int!
+    ): Transaction!
 
     createRep(name: String!, brand: String!, number: String!): String
     updateRepActive: String
@@ -108,6 +113,14 @@ export const typeDef = gql`
       type: ReportType!
       newStatus: ReportStatus!
     ): String!
+  }
+
+  input PaymentInfo {
+    card: String!
+    name: String!
+    expMonth: String!
+    expYear: String!
+    cvc: String!
   }
 
   enum ReportType {

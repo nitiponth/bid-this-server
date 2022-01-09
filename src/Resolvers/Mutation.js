@@ -20,6 +20,7 @@ import {
   retrieveRecipient,
   createTransfer,
   retrieveTransaction,
+  createToken,
 } from "../utils/omiseUtils";
 
 const Mutation = {
@@ -263,7 +264,7 @@ const Mutation = {
   },
   depositCredit: async (
     parent,
-    { cardId, token, amount },
+    { cardId, paymentInfo, save, amount },
     { userCtx },
     info
   ) => {
@@ -279,8 +280,9 @@ const Mutation = {
     }
 
     let customer;
+
     //customer use exist card
-    if (cardId && !token) {
+    if (cardId) {
       const cust = await retrieveCustomer(cardId);
       if (!cust) {
         throw new Error("Can not process payment with this card.");
@@ -290,29 +292,41 @@ const Mutation = {
     }
 
     //customer use new card
-    if (token && !cardId) {
-      const userFullname = user.name.first + " " + user.name.last;
-      const newCustomer = await createCustomer(user.email, userFullname, token);
+    if (paymentInfo) {
+      // const userFullname = user.name.first + " " + user.name.last;
+
+      //create token
+      const { card, name, expMonth, expYear, cvc } = paymentInfo;
+
+      const newToken = await createToken(name, card, expMonth, expYear, cvc);
+      if (!newToken) {
+        throw new Error("Can not create token, please try again.");
+      }
+
+      const newCustomer = await createCustomer(user.email, name, newToken.id);
       if (!newCustomer) {
         throw new Error("Can not process payment, please try again.");
       }
       customer = newCustomer;
+      console.log(newCustomer.cards);
 
       const { id, expiration_month, expiration_year, brand, last_digits } =
         newCustomer.cards.data[0];
 
-      user.cards.push({
-        id: newCustomer.id,
-        cardInfo: {
-          id,
-          expiration_month,
-          expiration_year,
-          brand,
-          last_digits,
-        },
-      });
+      if (save) {
+        user.cards.push({
+          id: newCustomer.id,
+          cardInfo: {
+            id,
+            expiration_month,
+            expiration_year,
+            brand,
+            last_digits,
+          },
+        });
 
-      await user.save();
+        await user.save();
+      }
     }
 
     const charge = await createCharge(amount * 100, customer.id);
@@ -341,6 +355,7 @@ const Mutation = {
     return res;
   },
 
+  //account
   createRep: async (parent, { name, brand, number }, { userCtx }, info) => {
     if (!userCtx) {
       throw new Error("You are not authenticated!");
