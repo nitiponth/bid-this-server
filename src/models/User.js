@@ -26,6 +26,10 @@ const user = mongoose.Schema(
     },
     status: { type: String, required: true },
     role: { type: String, required: true },
+    following: {
+      type: [{ type: mongoose.Types.ObjectId, ref: "User" }],
+      default: [],
+    },
     cards: [
       {
         id: String,

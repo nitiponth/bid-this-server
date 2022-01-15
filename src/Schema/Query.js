@@ -31,5 +31,20 @@ export const typeDef = gql`
 
     getReportUser(reportId: ID!): ReportedUser!
     getReportProduct(reportId: ID!): ReportedProduct!
+
+    # Follower / Followering
+    getFollowData(userId: ID!): followData!
   }
+
+  type followData {
+    followers: [User]!
+    followings: [User]!
+  }
+
+  # type shortInfo {
+  #   id: ID!
+  #   profile: String!
+  #   username: String!
+  #   desc: String
+  # }
 `;

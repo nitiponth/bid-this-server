@@ -106,6 +106,8 @@ const Mutation = {
         province: province,
         postcode: postcode,
       },
+      profile:
+        "https://bid-this-storage.s3.ap-southeast-1.amazonaws.com/profile/no-profile-2.png",
       wallet: 0,
       status: "GUEST",
       role: "USER",
@@ -241,29 +243,46 @@ const Mutation = {
       throw new Error("User not found.");
     }
 
-    // const product = await Product.findById(productId);
-    // if (!product) {
-    //   throw new Error("This product is not exists.");
-    // }
-
-    // const productIsActived = product.status === "ACTIVED";
-    // if (!productIsActived) {
-    //   throw new Error("This product is not Actived.");
-    // }
-
-    // const productIdx = user.watchlists.indexOf(productId);
-    // if (productIdx == -1) {
-    //   user.watchlists.push(productId);
-    // } else {
-    //   user.watchlists.splice(productIdx, 1);
-    // }
-
     user.watchlists = watchedArr;
 
     console.log(user.username, user.watchlists);
 
     return await user.save();
   },
+
+  toggleFollowing: async (parent, { userArr }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    // const targetUser = await User.findById(userId);
+    // if (!targetUser) {
+    //   throw new Error("User not found.");
+    // }
+
+    user.following = userArr;
+
+    // const userIdx = user.following.indexOf(userId);
+    // if (userIdx === -1) {
+    //   followingList.push(userId);
+    // } else {
+    //   followingList.splice(userIdx, 1);
+    //   console.log(`user ${userCtx.id} unfollow ${userId}`);
+    // }
+
+    await user.save();
+    console.log(
+      `update user ${userCtx.id} following to ${userArr.length} users`
+    );
+
+    return user;
+  },
+
   depositCredit: async (
     parent,
     { cardId, paymentInfo, save, amount },

@@ -45,6 +45,26 @@ const User = {
     const transactions = await Transaction.find({ user: parent.id });
     return transactions;
   },
+  followers: async (parent, args, ctx, info) => {
+    const followers = await UserModel.find({
+      following: { $elemMatch: { $eq: parent.id } },
+    });
+
+    return followers;
+  },
+  following: async (parent, args, ctx, info) => {
+    const following = parent.following.map(async (user) => {
+      const userData = await UserModel.findById(user);
+      return {
+        id: userData.id,
+        profile: userData.profile,
+        username: userData.username,
+        desc: userData.desc,
+      };
+    });
+
+    return following;
+  },
 };
 
 export default User;

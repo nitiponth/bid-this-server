@@ -32,6 +32,8 @@ export const typeDef = gql`
     ): User!
     addToWatchlists(watchedArr: [ID]!): User!
 
+    toggleFollowing(userArr: [ID]!): User!
+
     reportUser(userId: String!, body: String!): String!
 
     # Admin User mutation

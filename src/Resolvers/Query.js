@@ -178,6 +178,29 @@ const Query = {
     }
     return reportedProduct;
   },
+
+  getFollowData: async (parent, { userId }, { userCtx }, info) => {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    const followers = await User.find({
+      following: { $elemMatch: { $eq: userId } },
+    });
+
+    const followings = user.following.map(async (user) => {
+      const userData = await User.findById(user);
+      return {
+        id: userData.id,
+        profile: userData.profile,
+        username: userData.username,
+        desc: userData.desc,
+      };
+    });
+    return { followers, followings };
+  },
 };
 
 export default Query;

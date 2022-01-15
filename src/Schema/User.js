@@ -23,6 +23,8 @@ export const typeDef = gql`
     cards: [Card]!
     transactions: [Transaction]!
     bankAccounts: [Bank]
+    following: [User]!
+    followers: [User]!
   }
 
   type Name {
