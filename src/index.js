@@ -32,6 +32,7 @@ import ReportedProduct from "./Resolvers/ReportedProduct";
 import xjwt from "express-jwt";
 import blacklist from "express-jwt-blacklist";
 require("dotenv").config();
+import cors from "cors";
 
 import { pubsub } from "./utils/pubsub";
 
@@ -42,6 +43,8 @@ const startServer = async () => {
   blacklist.configure({
     tokenId: "jti",
   });
+
+  app.use(cors());
 
   app.use(
     xjwt({
@@ -111,15 +114,17 @@ const startServer = async () => {
   );
 
   await server.start();
-  server.applyMiddleware({ app });
+  server.applyMiddleware({ app, cors: { credentials: true, origin: true } });
   process.setMaxListeners(0);
 
   await mongoose.connect(
-    "mongodb+srv://gorgias:testpassword123456@cluster0.regwz.mongodb.net/testDb?retryWrites=true&w=majority"
+    `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_URI}`
   );
 
-  httpServer.listen({ port: 4000 }, () =>
-    console.log(`Server ready at http://localhost:4000${server.graphqlPath}`)
+  httpServer.listen({ port: process.env.PORT || 4000 }, () =>
+    console.log(
+      `Server ready at port ${process.env.PORT || 4000} ${server.graphqlPath}`
+    )
   );
 };
 
