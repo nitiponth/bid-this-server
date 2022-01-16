@@ -21,6 +21,7 @@ const product = mongoose.Schema(
     status: { type: String, required: true },
     images: [String],
     policy: [String],
+    extendTime: { type: Boolean, default: false },
   },
   {
     timestamps: {
