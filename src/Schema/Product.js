@@ -20,6 +20,7 @@ export const typeDef = gql`
     images: [String!]!
     policy: [String!]!
     comment: Comment
+    extendTime: Boolean
     createdAt: ScalarDate!
   }
 
@@ -36,6 +37,7 @@ export const typeDef = gql`
     ACTIVED
     RECEIVED
     BANNED
+    REFUNDED
   }
 
   enum Category {

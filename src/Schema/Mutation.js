@@ -71,6 +71,9 @@ export const typeDef = gql`
 
     reportProduct(productId: String!, body: String!): String!
 
+    refundProduct(productId: ID!): String!
+    extendDeliveryTime(productId: ID!): String!
+
     # admin product mutation
     adminUpdateProduct(
       productId: ID!

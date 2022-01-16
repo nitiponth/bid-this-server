@@ -894,6 +894,108 @@ const Mutation = {
     return "The request has been received.";
   },
 
+  refundProduct: async (parent, { productId }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    if (product.buyer.toString() !== user.id.toString()) {
+      throw new Error("You are Unauthorized.");
+    }
+
+    if (product.status !== "ACTIVED") {
+      throw new Error(
+        `Somethings went wrong. Please contact our admin with this productId ${product.id}`
+      );
+    }
+
+    const now = new Date();
+
+    if (product.end > now) {
+      throw new Error("The auction for this item is not over yet.");
+    }
+
+    const limitDays = new Date(product.end);
+    if (product.extendTime) {
+      limitDays.setDate(limitDays.getDate() + 14);
+    } else {
+      limitDays.setDate(limitDays.getDate() + 7);
+    }
+
+    if (now < limitDays) {
+      throw new Error("This product has not expired for delivery.");
+    }
+
+    const refundCredits = product.price.current;
+
+    user.wallet = user.wallet + refundCredits;
+
+    product.status = "REFUNDED";
+
+    await product.save();
+    await user.save();
+
+    pubsub.publish(`WALLET_CHANGED ${userCtx.id}`, {
+      walletChanged: user.wallet,
+    });
+
+    console.log(
+      `user ${user.id} refund product ${product.id} for ${refundCredits}฿`
+    );
+
+    return "Done.";
+  },
+
+  extendDeliveryTime: async (parent, { productId }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      throw new Error("Product not found.");
+    }
+
+    const now = new Date();
+
+    if (product.end > now) {
+      throw new Error("The auction for this item is not over yet.");
+    }
+
+    if (product.buyer.toString() !== user.id.toString()) {
+      throw new Error("You are Unauthorized.");
+    }
+
+    if (product.extendTime) {
+      throw new Error("This product alreary extend delivery time.");
+    }
+
+    product.extendTime = true;
+
+    await product.save();
+
+    console.log(
+      `user ${user.id} extend delivery time of product ${product.id}`
+    );
+
+    return "Done.";
+  },
+
   //admin Product mutation
   adminUpdateProduct: async (parent, args, { userCtx }, info) => {
     const { productId, title, desc, initialPrice, start, end, status } = args;
