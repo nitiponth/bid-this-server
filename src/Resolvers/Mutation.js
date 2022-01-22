@@ -131,6 +131,41 @@ const Mutation = {
     return "Signup has been successful.";
   },
 
+  verifyEmail: async (parent, { otp }, { userCtx }, info) => {
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("You are not authenticated!");
+    }
+
+    if (user.status === "FULLAUTHEN" || user.status === "AUTHEN") {
+      throw new Error("This user has already received an email confirmation.");
+    }
+
+    if (user.status === "BANNED") {
+      throw new Error("This user has been banned, please contact admin.");
+    }
+
+    const otpInDB = user.otp;
+    const expiredTime = user.exp_otp;
+
+    const now = new Date();
+    if (now > expiredTime) {
+      throw new Error("Your OTP has expired.");
+    }
+
+    if (otp !== otpInDB) {
+      throw new Error("Your OTP is invalid.");
+    }
+
+    user.status = "AUTHEN";
+
+    await user.save();
+
+    console.log(`${user.id} is verificated email successfully.`);
+
+    return "Email verificated.";
+  },
+
   getNewEmailVerification: async (parent, args, { userCtx }, info) => {
     const user = await User.findById(userCtx.id);
     if (!user) {

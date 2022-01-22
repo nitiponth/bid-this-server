@@ -32,6 +32,8 @@ export const typeDef = gql`
     ): User!
     addToWatchlists(watchedArr: [ID]!): User!
 
+    verifyEmail(otp: String!): String
+
     getNewEmailVerification: String
 
     toggleFollowing(userArr: [ID]!): User!

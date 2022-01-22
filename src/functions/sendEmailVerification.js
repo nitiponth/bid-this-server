@@ -328,14 +328,11 @@ body {font-family: 'Chivo', sans-serif;}
   </html>`,
   };
 
-  sgMail
-    .send(msg)
-    .then(() => {
-      console.log(`send verification email to ${email} successfully.`);
-      return true;
-    })
-    .catch((error) => {
-      console.error(error);
-      return false;
-    });
+  const result = await sgMail.send(msg);
+  if (result[0].statusCode === 202) {
+    console.log(`send verification email to ${email} successfully.`);
+    return true;
+  } else {
+    console.log(result[1]);
+  }
 };
