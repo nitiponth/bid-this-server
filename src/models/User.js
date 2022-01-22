@@ -54,6 +54,8 @@ const user = mongoose.Schema(
         },
       },
     ],
+    otp: String,
+    exp_otp: Date,
   },
   {
     timestamps: {

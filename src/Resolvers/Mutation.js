@@ -24,6 +24,7 @@ import {
   destroyCard,
   destroyRecipient,
 } from "../utils/omiseUtils";
+import { sendEmailVerification } from "../functions/sendEmailVerification";
 
 const Mutation = {
   //User Mutation
@@ -92,6 +93,10 @@ const Mutation = {
     }
     const hashedPasswword = await bcrypt.hash(password, 10);
 
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    const nextHour = new Date();
+    nextHour.setHours(nextHour.getHours() + 1);
+
     const user = new User({
       name: {
         first: first,
@@ -111,15 +116,91 @@ const Mutation = {
       wallet: 0,
       status: "GUEST",
       role: "USER",
+      otp: otp,
+      exp_otp: nextHour,
     });
     await user.save();
+
+    await sendEmailVerification({ email, otp });
 
     pubsub.publish("USER_CREATED", {
       userCreated: user,
     });
 
+    console.log(`user ${email} created account successfully.s`);
     return "Signup has been successful.";
   },
+
+  verifyEmail: async (parent, { otp }, { userCtx }, info) => {
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("You are not authenticated!");
+    }
+
+    if (user.status === "FULLAUTHEN" || user.status === "AUTHEN") {
+      throw new Error("This user has already received an email confirmation.");
+    }
+
+    if (user.status === "BANNED") {
+      throw new Error("This user has been banned, please contact admin.");
+    }
+
+    const otpInDB = user.otp;
+    const expiredTime = user.exp_otp;
+
+    const now = new Date();
+    if (now > expiredTime) {
+      throw new Error("Your OTP has expired.");
+    }
+
+    if (otp !== otpInDB) {
+      throw new Error("Your OTP is invalid.");
+    }
+
+    user.status = "AUTHEN";
+
+    await user.save();
+
+    console.log(`${user.id} is verificated email successfully.`);
+
+    return "Email verificated.";
+  },
+
+  getNewEmailVerification: async (parent, args, { userCtx }, info) => {
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("You are not authenticated!");
+    }
+
+    if (user.status === "FULLAUTHEN" || user.status === "AUTHEN") {
+      throw new Error("This user has already received an email confirmation.");
+    }
+
+    if (user.status === "BANNED") {
+      throw new Error("This user has been banned, please contact admin.");
+    }
+
+    const newOtp = Math.floor(100000 + Math.random() * 900000);
+    const email = user.email;
+
+    const nextHour = new Date();
+    nextHour.setHours(nextHour.getHours() + 1);
+
+    user.otp = newOtp;
+    user.exp_otp = nextHour;
+
+    await user.save();
+
+    const result = await sendEmailVerification({ email, otp: newOtp });
+    if (!result) {
+      throw new Error("Send email failed, Please contact our admin.");
+    }
+
+    console.log(`send new OTP to ${user.id} successfully.`);
+
+    return "send new otp successfully.";
+  },
+
   updateUser: async (parent, args, { userCtx }, info) => {
     if (!userCtx) {
       throw new Error("You are not authenticated!");
