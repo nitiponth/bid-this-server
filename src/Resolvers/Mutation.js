@@ -753,8 +753,8 @@ const Mutation = {
       productCreated: product,
     });
 
-    // userExists.products.push(product.id);
-    // await userExists.save();
+    userExists.products.push(product.id);
+    await userExists.save();
 
     console.log("created product: " + product.id);
 
