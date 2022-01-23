@@ -7,7 +7,7 @@ const ScalarDate = new GraphQLScalarType({
     return new Date(value);
   },
   serialize(value) {
-    return new Date(value).toLocaleString("en-US");
+    return new Date(value);
   },
 });
 

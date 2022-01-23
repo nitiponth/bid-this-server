@@ -720,6 +720,8 @@ const Mutation = {
     const now = new Date();
     const limitTime = now.setHours(now.getHours() + 2);
 
+    console.log("start: ", new Date(start).toLocaleString());
+
     if (start < limitTime) {
       throw new Error(
         "The time must be set at least 2 hours from the current time."
@@ -753,8 +755,8 @@ const Mutation = {
       productCreated: product,
     });
 
-    // userExists.products.push(product.id);
-    // await userExists.save();
+    userExists.products.push(product.id);
+    await userExists.save();
 
     console.log("created product: " + product.id);
 
