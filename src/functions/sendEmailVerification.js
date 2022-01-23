@@ -9,7 +9,7 @@ export const sendEmailVerification = async ({ email, otp }) => {
     subject: "Verify your account on BidThis Application",
     text: `Hello,
 
-*Pease use the verification code below on the BidThis website:*
+*Please use the verification code below on the BidThis website:*
 
 ******
 ${otp}
@@ -229,7 +229,7 @@ body {font-family: 'Chivo', sans-serif;}
   </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="b16a4afb-f245-4156-968e-8080176990ea.1" data-mc-module-version="2019-10-22">
     <tbody>
       <tr>
-        <td style="padding:18px 40px 10px 0px; line-height:18px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: inherit"><span style="color: #00634a"><strong>Pease use the verification code below on the BidThis website:</strong></span></div><div></div></div></td>
+        <td style="padding:18px 40px 10px 0px; line-height:18px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: inherit"><span style="color: #00634a"><strong>Please use the verification code below on the BidThis website:</strong></span></div><div></div></div></td>
       </tr>
     </tbody>
   </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="be601712-8814-40a5-92a0-b57e2ca8c984" data-mc-module-version="2019-10-22">
