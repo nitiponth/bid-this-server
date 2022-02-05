@@ -758,6 +758,11 @@ const Mutation = {
 
     console.log("created product: " + product.id);
 
+    //subscription
+    pubsub.publish("PRODUCT_CREATED", {
+      productCreated: product,
+    });
+
     return product;
   },
   updateProduct: async (parent, args, { userCtx }, info) => {
