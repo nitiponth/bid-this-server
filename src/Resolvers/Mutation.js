@@ -25,6 +25,7 @@ import {
   destroyRecipient,
 } from "../utils/omiseUtils";
 import { sendEmailVerification } from "../functions/sendEmailVerification";
+import Notification from "../models/Notification";
 
 const Mutation = {
   //User Mutation
@@ -747,10 +748,10 @@ const Mutation = {
       status: "ACTIVED",
     });
 
-    await product.save();
+    const createdProduct = await product.save();
 
     pubsub.publish("PRODUCT_CREATED", {
-      productCreated: product,
+      productCreated: createdProduct,
     });
 
     userExists.products.push(product.id);
@@ -758,9 +759,13 @@ const Mutation = {
 
     console.log("created product: " + product.id);
 
-    //subscription
-    pubsub.publish("PRODUCT_CREATED", {
-      productCreated: product,
+    //create New Notification
+    const message = `${userExists.username} put ${createdProduct.title} up for auction, see product details now! `;
+
+    const notification = new Notification({
+      user: userExists.id,
+      product: createdProduct.id,
+      message,
     });
 
     return product;

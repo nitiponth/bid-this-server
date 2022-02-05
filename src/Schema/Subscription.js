@@ -7,6 +7,7 @@ export const typeDef = gql`
     bidPlaced(productId: ID!): BidSubPayload!
     walletChanged(userId: ID!): Int!
     productsChanged: String
+    userNotification(userId: ID!): Notification!
   }
 
   type BidSubPayload {

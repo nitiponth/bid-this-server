@@ -26,7 +26,7 @@ const Subscription = {
       return pubsub.asyncIterator(`WALLET_CHANGED ${userId}`);
     },
   },
-  followingCreateProduct: {
+  userNotification: {
     subscribe: async (parent, { userId }, ctx, info) => {
       return pubsub.asyncIterator(`FOLLOWING_CREATE_PROD ${userId}`);
     },
