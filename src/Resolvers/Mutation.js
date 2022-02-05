@@ -26,6 +26,7 @@ import {
 } from "../utils/omiseUtils";
 import { sendEmailVerification } from "../functions/sendEmailVerification";
 import Notification from "../models/Notification";
+import { sendNotificaitons } from "../functions/sendNotifications";
 
 const Mutation = {
   //User Mutation
@@ -754,22 +755,51 @@ const Mutation = {
       productCreated: createdProduct,
     });
 
-    userExists.products.push(product.id);
-    await userExists.save();
-
     console.log("created product: " + product.id);
 
-    //create New Notification
-    const message = `${userExists.username} put ${createdProduct.title} up for auction, see product details now! `;
-
-    const notification = new Notification({
-      user: userExists.id,
-      product: createdProduct.id,
-      message,
+    const follower = await User.find({
+      following: userCtx.id,
     });
+
+    const tickets = follower.map((user) => {
+      const { id } = user;
+
+      return sendNotificaitons({
+        sellerId: userExists.id,
+        productId: createdProduct.id,
+        productTitle: createdProduct.title,
+        targetId: id,
+        username: userExists.username,
+      });
+    });
+
+    await Promise.all(tickets);
 
     return product;
   },
+
+  // testNotification: async (parent, args, { userCtx }, info) => {
+  //   const follower = await User.find({
+  //     following: userCtx.id,
+  //   });
+
+  //   const tickets = follower.map((user) => {
+  //     const { id } = user;
+
+  //     return sendNotificaitons({
+  //       sellerId: userExists.id,
+  //       productId: createdProduct.id,
+  //       productTitle: createdProduct.title,
+  //       targetId: id,
+  //       username: userExists.username,
+  //     });
+  //   });
+
+  //   await Promise.all(tickets);
+
+  //   return "done.";
+  // },
+
   updateProduct: async (parent, args, { userCtx }, info) => {
     const {
       productId,

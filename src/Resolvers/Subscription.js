@@ -28,7 +28,7 @@ const Subscription = {
   },
   userNotification: {
     subscribe: async (parent, { userId }, ctx, info) => {
-      return pubsub.asyncIterator(`FOLLOWING_CREATE_PROD ${userId}`);
+      return pubsub.asyncIterator(`NOTIFLY ${userId}`);
     },
   },
   productsChanged: {

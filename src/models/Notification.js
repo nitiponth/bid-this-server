@@ -2,7 +2,7 @@ import { Schema, model, Types } from "mongoose";
 
 const notification = new Schema(
   {
-    user: { type: Types.ObjectId, ref: "User" },
+    seller: { type: Types.ObjectId, ref: "User" },
     target: { type: Types.ObjectId, ref: "User" },
     product: { type: Types.ObjectId, ref: "Product" },
     message: { type: String, required: true },

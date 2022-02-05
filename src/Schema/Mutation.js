@@ -125,6 +125,8 @@ export const typeDef = gql`
       type: ReportType!
       newStatus: ReportStatus!
     ): String!
+
+    # testNotification: String
   }
 
   input PaymentInfo {
