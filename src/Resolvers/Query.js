@@ -5,6 +5,7 @@ import { Transaction } from "../models/Transaction";
 import { ReportedUser } from "../models/ReportedUser";
 import { ReportedProduct } from "../models/ReportedProduct";
 import mongoose from "mongoose";
+import Notification from "../models/Notification";
 
 const Query = {
   hello: () => "hello",
@@ -200,6 +201,22 @@ const Query = {
       };
     });
     return { followers, followings };
+  },
+
+  // Notification
+  getNotifications: async (parent, args, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    const user = await User.findById(userCtx.id);
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    const notifications = await Notification.find({ target: user.id });
+
+    return notifications;
   },
 };
 

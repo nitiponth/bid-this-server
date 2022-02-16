@@ -25,7 +25,6 @@ import {
   destroyRecipient,
 } from "../utils/omiseUtils";
 import { sendEmailVerification } from "../functions/sendEmailVerification";
-import Notification from "../models/Notification";
 import { sendNotificaitons } from "../functions/sendNotifications";
 
 const Mutation = {

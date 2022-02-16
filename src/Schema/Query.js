@@ -34,6 +34,9 @@ export const typeDef = gql`
 
     # Follower / Followering
     getFollowData(userId: ID!): followData!
+
+    # Notifications
+    getNotifications: [Notification]!
   }
 
   type followData {

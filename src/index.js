@@ -29,6 +29,7 @@ import Subscription from "./Resolvers/Subscription";
 import Transaction from "./Resolvers/Transaction";
 import ReportedUser from "./Resolvers/ReportedUser";
 import ReportedProduct from "./Resolvers/ReportedProduct";
+import Notification from "./Resolvers/Notification";
 
 import xjwt from "express-jwt";
 import blacklist from "express-jwt-blacklist";
@@ -82,6 +83,7 @@ const startServer = async () => {
       Transaction,
       ReportedUser,
       ReportedProduct,
+      Notification,
     },
   });
 
