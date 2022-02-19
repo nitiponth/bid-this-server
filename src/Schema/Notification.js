@@ -2,7 +2,7 @@ import { gql } from "apollo-server-express";
 
 export const NotificationTypeDef = gql`
   type Notification {
-    id: ID!
+    _id: ID!
     seller: User!
     target: User!
     product: Product!

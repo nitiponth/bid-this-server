@@ -204,7 +204,12 @@ const Query = {
   },
 
   // Notification
-  getNotifications: async (parent, args, { userCtx }, info) => {
+  getNotifications: async (
+    parent,
+    { offset = 0, limit = 10 },
+    { userCtx },
+    info
+  ) => {
     if (!userCtx) {
       throw new Error("You are not authenticated!");
     }
@@ -214,11 +219,70 @@ const Query = {
       throw new Error("User not found.");
     }
 
-    const notifications = await Notification.find({ target: user.id }).sort({
-      createdAt: -1,
-    });
+    const count = await Notification.aggregate([
+      {
+        $match: {
+          target: mongoose.Types.ObjectId(user.id),
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $count: "count",
+      },
+    ]);
 
-    return notifications;
+    const unseenCount = await Notification.aggregate([
+      {
+        $match: {
+          target: mongoose.Types.ObjectId(user.id),
+          seen: false,
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $count: "unseen",
+      },
+    ]);
+
+    const notifications = await Notification.aggregate([
+      {
+        $match: {
+          target: mongoose.Types.ObjectId(user.id),
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $skip: offset,
+      },
+      {
+        $limit: limit,
+      },
+    ]);
+
+    const result = {
+      data: notifications,
+      unseen: unseenCount[0]?.unseen || 0,
+      metadata: {
+        count: count[0]?.count || 0,
+        current: notifications?.length + offset || 0,
+        limit,
+        offset,
+      },
+    };
+
+    return result;
   },
 };
 
