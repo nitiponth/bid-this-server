@@ -26,6 +26,7 @@ import {
 } from "../utils/omiseUtils";
 import { sendEmailVerification } from "../functions/sendEmailVerification";
 import { sendNotificaitons } from "../functions/sendNotifications";
+import Notification from "../models/Notification";
 
 const Mutation = {
   //User Mutation
@@ -1395,6 +1396,22 @@ const Mutation = {
     await reportData.save();
 
     console.log(`update report ${reportData.id} sucessfully.`);
+
+    return "Done.";
+  },
+
+  seenNotification: async (parent, { notiId }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    await Notification.findOneAndUpdate(
+      {
+        _id: notiId,
+        target: userCtx.id,
+      },
+      { seen: true }
+    );
 
     return "Done.";
   },

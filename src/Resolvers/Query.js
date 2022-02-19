@@ -214,7 +214,9 @@ const Query = {
       throw new Error("User not found.");
     }
 
-    const notifications = await Notification.find({ target: user.id });
+    const notifications = await Notification.find({ target: user.id }).sort({
+      createdAt: -1,
+    });
 
     return notifications;
   },

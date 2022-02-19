@@ -127,6 +127,7 @@ export const typeDef = gql`
     ): String!
 
     # testNotification: String
+    seenNotification(notiId: ID!): String
   }
 
   input PaymentInfo {
