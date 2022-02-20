@@ -4,12 +4,9 @@ import { pubsub } from "../utils/pubsub";
 export const sendNotificaitons = async ({
   sellerId,
   productId,
-  productTitle,
   targetId,
-  username,
+  message,
 }) => {
-  const message = `${username} put ${productTitle} up for auction, see product details now! `;
-
   const notification = new Notification({
     seller: sellerId,
     target: targetId,

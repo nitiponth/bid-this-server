@@ -762,14 +762,15 @@ const Mutation = {
     });
 
     const tickets = follower.map((user) => {
-      const { id } = user;
+      const { id: targetId } = user;
+
+      const message = `${userExists.username} put ${createdProduct.title} up for auction, see product details now! `;
 
       return sendNotificaitons({
         sellerId: userExists.id,
         productId: createdProduct.id,
-        productTitle: createdProduct.title,
-        targetId: id,
-        username: userExists.username,
+        targetId,
+        message,
       });
     });
 
@@ -1221,6 +1222,15 @@ const Mutation = {
       await oldBidder.save();
       pubsub.publish(`WALLET_CHANGED ${oldBidder.id}`, {
         walletChanged: oldBidder.wallet,
+      });
+
+      const message = `Someone placed a higher bid than you. Let go check it! `;
+
+      sendNotificaitons({
+        sellerId: product.seller,
+        productId: product.id,
+        targetId: oldBidder.id,
+        message,
       });
     }
 

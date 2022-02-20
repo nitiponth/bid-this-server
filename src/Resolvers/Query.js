@@ -5,7 +5,7 @@ import { Transaction } from "../models/Transaction";
 import { ReportedUser } from "../models/ReportedUser";
 import { ReportedProduct } from "../models/ReportedProduct";
 import mongoose from "mongoose";
-import Notification from "../models/Notification";
+import { getNotificationsWithPage } from "../functions/getNotificationsWithPage";
 
 const Query = {
   hello: () => "hello",
@@ -214,73 +214,7 @@ const Query = {
       throw new Error("You are not authenticated!");
     }
 
-    const user = await User.findById(userCtx.id);
-    if (!user) {
-      throw new Error("User not found.");
-    }
-
-    const count = await Notification.aggregate([
-      {
-        $match: {
-          target: mongoose.Types.ObjectId(user.id),
-        },
-      },
-      {
-        $sort: {
-          createdAt: -1,
-        },
-      },
-      {
-        $count: "count",
-      },
-    ]);
-
-    const unseenCount = await Notification.aggregate([
-      {
-        $match: {
-          target: mongoose.Types.ObjectId(user.id),
-          seen: false,
-        },
-      },
-      {
-        $sort: {
-          createdAt: -1,
-        },
-      },
-      {
-        $count: "unseen",
-      },
-    ]);
-
-    const notifications = await Notification.aggregate([
-      {
-        $match: {
-          target: mongoose.Types.ObjectId(user.id),
-        },
-      },
-      {
-        $sort: {
-          createdAt: -1,
-        },
-      },
-      {
-        $skip: offset,
-      },
-      {
-        $limit: limit,
-      },
-    ]);
-
-    const result = {
-      data: notifications,
-      unseen: unseenCount[0]?.unseen || 0,
-      metadata: {
-        count: count[0]?.count || 0,
-        current: notifications?.length + offset || 0,
-        limit,
-        offset,
-      },
-    };
+    const result = await getNotificationsWithPage(userCtx.id, offset, limit);
 
     return result;
   },
