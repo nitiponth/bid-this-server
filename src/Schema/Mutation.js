@@ -126,7 +126,7 @@ export const typeDef = gql`
       newStatus: ReportStatus!
     ): String!
 
-    # testNotification: String
+    # Notification Mutation
     seenNotification(notiId: ID!): String
   }
 

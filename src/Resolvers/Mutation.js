@@ -779,28 +779,6 @@ const Mutation = {
     return product;
   },
 
-  // testNotification: async (parent, args, { userCtx }, info) => {
-  //   const follower = await User.find({
-  //     following: userCtx.id,
-  //   });
-
-  //   const tickets = follower.map((user) => {
-  //     const { id } = user;
-
-  //     return sendNotificaitons({
-  //       sellerId: userExists.id,
-  //       productId: createdProduct.id,
-  //       productTitle: createdProduct.title,
-  //       targetId: id,
-  //       username: userExists.username,
-  //     });
-  //   });
-
-  //   await Promise.all(tickets);
-
-  //   return "done.";
-  // },
-
   updateProduct: async (parent, args, { userCtx }, info) => {
     const {
       productId,
