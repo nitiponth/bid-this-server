@@ -34,11 +34,27 @@ export const typeDef = gql`
 
     # Follower / Followering
     getFollowData(userId: ID!): followData!
+
+    # Notifications
+    getNotifications(offset: Int, limit: Int): NotificationWithMeta!
   }
 
   type followData {
     followers: [User]!
     followings: [User]!
+  }
+
+  type NotificationWithMeta {
+    data: [Notification]!
+    unseen: Int!
+    metadata: Metadata
+  }
+
+  type Metadata {
+    count: Int!
+    current: Int!
+    limit: Int!
+    offset: Int!
   }
 
   # type shortInfo {

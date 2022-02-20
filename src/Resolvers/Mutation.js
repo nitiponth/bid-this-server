@@ -25,6 +25,8 @@ import {
   destroyRecipient,
 } from "../utils/omiseUtils";
 import { sendEmailVerification } from "../functions/sendEmailVerification";
+import { sendNotificaitons } from "../functions/sendNotifications";
+import Notification from "../models/Notification";
 
 const Mutation = {
   //User Mutation
@@ -747,19 +749,36 @@ const Mutation = {
       status: "ACTIVED",
     });
 
-    await product.save();
+    const createdProduct = await product.save();
 
     pubsub.publish("PRODUCT_CREATED", {
-      productCreated: product,
+      productCreated: createdProduct,
     });
-
-    userExists.products.push(product.id);
-    await userExists.save();
 
     console.log("created product: " + product.id);
 
+    const follower = await User.find({
+      following: userCtx.id,
+    });
+
+    const tickets = follower.map((user) => {
+      const { id: targetId } = user;
+
+      const message = `${userExists.username} put ${createdProduct.title} up for auction, see product details now! `;
+
+      return sendNotificaitons({
+        sellerId: userExists.id,
+        productId: createdProduct.id,
+        targetId,
+        message,
+      });
+    });
+
+    await Promise.all(tickets);
+
     return product;
   },
+
   updateProduct: async (parent, args, { userCtx }, info) => {
     const {
       productId,
@@ -1182,6 +1201,15 @@ const Mutation = {
       pubsub.publish(`WALLET_CHANGED ${oldBidder.id}`, {
         walletChanged: oldBidder.wallet,
       });
+
+      const message = `Someone placed a higher bid than you. Let go check it! `;
+
+      sendNotificaitons({
+        sellerId: product.seller,
+        productId: product.id,
+        targetId: oldBidder.id,
+        message,
+      });
     }
 
     //pay for new bid
@@ -1356,6 +1384,22 @@ const Mutation = {
     await reportData.save();
 
     console.log(`update report ${reportData.id} sucessfully.`);
+
+    return "Done.";
+  },
+
+  seenNotification: async (parent, { notiId }, { userCtx }, info) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    await Notification.findOneAndUpdate(
+      {
+        _id: notiId,
+        target: userCtx.id,
+      },
+      { seen: true }
+    );
 
     return "Done.";
   },

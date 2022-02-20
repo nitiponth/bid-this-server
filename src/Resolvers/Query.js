@@ -5,6 +5,7 @@ import { Transaction } from "../models/Transaction";
 import { ReportedUser } from "../models/ReportedUser";
 import { ReportedProduct } from "../models/ReportedProduct";
 import mongoose from "mongoose";
+import { getNotificationsWithPage } from "../functions/getNotificationsWithPage";
 
 const Query = {
   hello: () => "hello",
@@ -200,6 +201,22 @@ const Query = {
       };
     });
     return { followers, followings };
+  },
+
+  // Notification
+  getNotifications: async (
+    parent,
+    { offset = 0, limit = 10 },
+    { userCtx },
+    info
+  ) => {
+    if (!userCtx) {
+      throw new Error("You are not authenticated!");
+    }
+
+    const result = await getNotificationsWithPage(userCtx.id, offset, limit);
+
+    return result;
   },
 };
 

@@ -125,6 +125,9 @@ export const typeDef = gql`
       type: ReportType!
       newStatus: ReportStatus!
     ): String!
+
+    # Notification Mutation
+    seenNotification(notiId: ID!): String
   }
 
   input PaymentInfo {

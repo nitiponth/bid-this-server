@@ -16,6 +16,7 @@ import { typeDef as SubscriptionType } from "./Schema/Subscription";
 import { typeDef as TransactionType } from "./Schema/Transaction";
 import { typeDef as ReportedUserType } from "./Schema/ReportedUser";
 import { typeDef as ReportedProductType } from "./Schema/ReportedProduct";
+import { NotificationTypeDef } from "./Schema/Notification";
 
 import Query from "./Resolvers/Query";
 import Mutation from "./Resolvers/Mutation";
@@ -28,6 +29,7 @@ import Subscription from "./Resolvers/Subscription";
 import Transaction from "./Resolvers/Transaction";
 import ReportedUser from "./Resolvers/ReportedUser";
 import ReportedProduct from "./Resolvers/ReportedProduct";
+import Notification from "./Resolvers/Notification";
 
 import xjwt from "express-jwt";
 import blacklist from "express-jwt-blacklist";
@@ -67,6 +69,7 @@ const startServer = async () => {
       TransactionType,
       ReportedUserType,
       ReportedProductType,
+      NotificationTypeDef,
     ],
     resolvers: {
       Query,
@@ -80,6 +83,7 @@ const startServer = async () => {
       Transaction,
       ReportedUser,
       ReportedProduct,
+      Notification,
     },
   });
 
