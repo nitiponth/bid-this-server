@@ -27,6 +27,7 @@ import {
 import { sendEmailVerification } from "../functions/sendEmailVerification";
 import { sendNotificaitons } from "../functions/sendNotifications";
 import Notification from "../models/Notification";
+import { updateTransaction } from "../functions/transaction/transaction";
 
 const Mutation = {
   //User Mutation
@@ -1319,7 +1320,7 @@ const Mutation = {
   },
 
   // Transaction Query
-  updateAndGetTransactions: async (parent, args, { userCtx }, info) => {
+  updateTransactions: async (parent, args, { userCtx }, info) => {
     if (!userCtx) {
       throw new Error("You are not authenticated!");
     }
@@ -1327,25 +1328,29 @@ const Mutation = {
     if (!user) {
       throw new Error("User not found.");
     }
-    const transactions = await Transaction.find({ user: userCtx.id });
 
-    if (transactions.length === 0) {
-      return transactions;
-    }
+    try {
+      const transactions = await Transaction.find({ user: userCtx.id });
 
-    for (const [idx, transaction] of transactions.entries()) {
-      if (transaction.status || transaction.type !== "WITHDRAW") {
-        continue;
+      if (transactions.length === 0) {
+        return transactions;
       }
 
-      const data = await retrieveTransaction(transaction.tranId);
-      if (data && data.sent && data.paid) {
-        transaction.status = data.sent;
-        await transaction.save();
-      }
-    }
+      const promTicket = transactions.map((tran) => {
+        if (tran.status || tran.type !== "WITHDRAW") {
+          return;
+        }
 
-    return transactions;
+        return updateTransaction(tran);
+      });
+
+      const result = await Promise.all(promTicket);
+
+      return `updated ${result.length} transactions.`;
+    } catch (error) {
+      console.log(error);
+      return error.message;
+    }
   },
 
   // Admin Report Mutation

@@ -23,7 +23,7 @@ export const typeDef = gql`
     getComments(productId: ID!): Comment
 
     #Transaction Query
-    getTransactionsByUserId: [Transaction]!
+    getTransactionsByUserId(offset: Int, limit: Int): TransactionWithMeta!
 
     #Report Query
     getReportedUsers: [ReportedUser]!
@@ -47,6 +47,11 @@ export const typeDef = gql`
   type NotificationWithMeta {
     data: [Notification]!
     unseen: Int!
+    metadata: Metadata
+  }
+
+  type TransactionWithMeta {
+    data: [Transaction]!
     metadata: Metadata
   }
 
