@@ -2,7 +2,7 @@ import { gql } from "apollo-server-express";
 
 export const typeDef = gql`
   type Transaction {
-    id: ID!
+    _id: ID!
     tranId: String
     user: User!
     amount: Int!

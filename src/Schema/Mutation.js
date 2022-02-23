@@ -114,7 +114,7 @@ export const typeDef = gql`
     updateRepActive: String
     withdrawCredit(bankId: String!, amount: Int!): Transaction!
 
-    updateAndGetTransactions: [Transaction]!
+    updateTransactions: String
 
     removeCard(custId: String!): String
     removeRecipient(reptId: String!): String

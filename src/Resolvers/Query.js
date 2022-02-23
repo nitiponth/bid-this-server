@@ -148,9 +148,53 @@ const Query = {
   },
 
   // Transaction Query
-  getTransactionsByUserId: async (parent, args, { userCtx }, info) => {
-    const transactions = await Transaction.find({ user: userCtx.id });
-    return transactions;
+  getTransactionsByUserId: async (
+    parent,
+    { offset = 0, limit = 10 },
+    { userCtx },
+    info
+  ) => {
+    const transCount = Transaction.aggregate([
+      {
+        $match: {
+          user: mongoose.Types.ObjectId(userCtx.id),
+        },
+      },
+      { $count: "count" },
+    ]);
+
+    const transactions = Transaction.aggregate([
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $match: {
+          user: mongoose.Types.ObjectId(userCtx.id),
+        },
+      },
+      {
+        $skip: offset,
+      },
+      {
+        $limit: limit,
+      },
+    ]);
+
+    const promResult = await Promise.all([transCount, transactions]);
+
+    const result = {
+      data: promResult[1],
+      metadata: {
+        count: promResult[0][0].count || 0,
+        current: offset + limit,
+        limit,
+        offset,
+      },
+    };
+
+    return result;
   },
 
   // Report Query
