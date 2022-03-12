@@ -29,6 +29,9 @@ import { sendNotificaitons } from "../functions/sendNotifications";
 import Notification from "../models/Notification";
 import { updateTransaction } from "../functions/transaction/transaction";
 
+import { v4 as uuidv4 } from "uuid";
+import { sendRecoveryPasswordEmail } from "../functions/sendRecoveryPasswordEmail";
+
 const Mutation = {
   //User Mutation
   login: async (parent, { email, password }, ctx, info) => {
@@ -132,6 +135,17 @@ const Mutation = {
 
     console.log(`user ${email} created account successfully.s`);
     return "Signup has been successful.";
+  },
+
+  requestRecoverPassword: async (parent, { email }, { userCtx }, { res }) => {
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error("No user exist.");
+    }
+
+    const token = uuidv4();
+    sendRecoveryPasswordEmail({ email, token });
+    return "";
   },
 
   verifyEmail: async (parent, { otp }, { userCtx }, info) => {
