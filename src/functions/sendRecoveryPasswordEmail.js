@@ -1,21 +1,24 @@
 import sgMail from "@sendgrid/mail";
 
-export const sendRecoveryPasswordEmail = async ({ email, token }) => {
+export const sendRecoveryPasswordEmail = async ({
+  email,
+  token,
+  callbackUrl,
+}) => {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const webEmail = process.env.BIDTHIS_EMAIL;
   const msg = {
     to: email, // Change to your recipient
     from: webEmail,
-    subject: "[RE-PASSWORD] recovery your password on BidThis Application",
+    subject:
+      "[RECOVERY-PASSWORD] recovery your password on BidThis Application",
     text: `Hello,
 
-*Please Click link below to reset your password on the BidThis website:*
+*Please use this link below to reset your password on the BidThis website:*
 
 ******
-<a href="${process.env.CLIENT_RECOVER_URL}/${token}">Recover Link.</a>
+${callbackUrl}/recover/code/${token}
 ******
-or use this link if hyperlink not work.
-${process.env.CLIENT_RECOVER_URL}/${token}
 
 If you didn't request this you can ignore this email or let us know.
 
@@ -231,13 +234,13 @@ body {font-family: 'Chivo', sans-serif;}
   </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="b16a4afb-f245-4156-968e-8080176990ea.1" data-mc-module-version="2019-10-22">
     <tbody>
       <tr>
-        <td style="padding:18px 40px 10px 0px; line-height:18px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: inherit"><span style="color: #00634a"><strong>Please use the verification code below on the BidThis website:</strong></span></div><div></div></div></td>
+        <td style="padding:18px 40px 10px 0px; line-height:18px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><div style="font-family: inherit; text-align: inherit"><span style="color: #00634a"><strong>Please use this link below to reset your password on the BidThis website:</strong></span></div><div></div></div></td>
       </tr>
     </tbody>
   </table><table class="module" role="module" data-type="text" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="be601712-8814-40a5-92a0-b57e2ca8c984" data-mc-module-version="2019-10-22">
     <tbody>
       <tr>
-        <td style="padding:18px 0px 18px 0px; line-height:40px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><h1 style="text-align: center">${otp}</h1><div></div></div></td>
+        <td style="padding:18px 0px 18px 0px; line-height:40px; text-align:inherit;" height="100%" valign="top" bgcolor="" role="module-content"><div><h1 style="text-align: center"><a href="${callbackUrl}/recover/code/${token}">Recovery Link</a></h1><div></div></div></td>
       </tr>
     </tbody>
   </table><table class="module" role="module" data-type="spacer" border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;" data-muid="c97177b8-c172-4c4b-b5bd-7604cde23e3f">
@@ -332,7 +335,7 @@ body {font-family: 'Chivo', sans-serif;}
 
   const result = await sgMail.send(msg);
   if (result[0].statusCode === 202) {
-    console.log(`send verification email to ${email} successfully.`);
+    console.log(`send recovery email to ${email} successfully.`);
     return true;
   } else {
     console.log(result[1]);

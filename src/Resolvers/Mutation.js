@@ -137,15 +137,62 @@ const Mutation = {
     return "Signup has been successful.";
   },
 
-  requestRecoverPassword: async (parent, { email }, { userCtx }, { res }) => {
+  requestRecoverPassword: async (
+    parent,
+    { email, callbackUrl },
+    { userCtx },
+    info
+  ) => {
     const user = await User.findOne({ email });
     if (!user) {
       throw new Error("No user exist.");
     }
 
     const token = uuidv4();
-    sendRecoveryPasswordEmail({ email, token });
-    return "";
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 30);
+
+    await User.findOneAndUpdate(
+      { _id: user.id },
+      {
+        recover_token: token,
+        exp_recover_token: now,
+      }
+    );
+
+    sendRecoveryPasswordEmail({ email, token, callbackUrl });
+    return "Ok.";
+  },
+
+  recoverPassword: async (
+    parent,
+    { newPassword, reNewPassword, token },
+    { userCtx },
+    info
+  ) => {
+    const user = await User.findOne({ recover_token: token });
+    if (!user) {
+      throw new Error("This token is not exist in any users.");
+    }
+
+    const isExpired = new Date() > user.exp_recover_token;
+    if (isExpired) {
+      throw new Error("Recovery token is expired.");
+    }
+
+    if (newPassword !== reNewPassword) {
+      throw new Error("Password is not match each other.");
+    }
+    if (newPassword.length < 6) {
+      throw new Error("Password must be at least 6 characters long.");
+    }
+
+    const hashedPasswword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedPasswword;
+    await user.save();
+
+    return "Ok.";
   },
 
   verifyEmail: async (parent, { otp }, { userCtx }, info) => {

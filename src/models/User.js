@@ -56,6 +56,8 @@ const user = mongoose.Schema(
     ],
     otp: String,
     exp_otp: Date,
+    recover_token: String,
+    exp_recover_token: Date,
   },
   {
     timestamps: {
