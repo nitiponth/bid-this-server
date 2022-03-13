@@ -30,6 +30,14 @@ export const typeDef = gql`
       idCard: String
       photo: String
     ): User!
+
+    requestRecoverPassword(email: String!, callbackUrl: String!): String
+    recoverPassword(
+      newPassword: String!
+      reNewPassword: String!
+      token: String!
+    ): String
+
     addToWatchlists(watchedArr: [ID]!): User!
 
     verifyEmail(otp: String!): String
