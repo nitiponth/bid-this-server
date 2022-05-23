@@ -74,21 +74,52 @@ const Query = {
     return products;
   },
   getActivedProducts: async (parent, args, ctx, info) => {
-    const currentTime = new Date().toLocaleString("en-Us");
+    const currentTime = new Date();
 
-    const products = await Product.find({
-      // start: { $lt: currentTime },
-      end: { $gte: currentTime },
-    });
+    const products = await Product.aggregate([
+      {
+        $match: {
+          end: {
+            $gte: currentTime,
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "seller",
+          foreignField: "_id",
+          as: "seller",
+        },
+      },
+      {
+        $unwind: {
+          path: "$seller",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $match: {
+          $expr: {
+            $and: [
+              { $ne: ["$seller.status", "BANNED"] },
+              { $eq: ["$status", "ACTIVED"] },
+            ],
+          },
+        },
+      },
+      {
+        $addFields: {
+          id: "$_id",
+        },
+      },
+    ]);
+
     if (!products) {
       throw new Error("Product not found.");
     }
 
-    const productsList = products.filter(
-      (product) => product.status === "ACTIVED"
-    );
-
-    return productsList;
+    return products;
   },
   getProductById: async (parent, args, ctx, info) => {
     const { productId } = args;

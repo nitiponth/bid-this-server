@@ -13,7 +13,7 @@ export const typeDef = gql`
     addToWatchlists(productId: ID!): User!
 
     #Product Query
-    getProducts(title: String): [Product!]!
+    getProducts(title: String): [Product]!
     getActivedProducts: [Product!]!
     getProductById(productId: ID!): Product!
     getProductsByUserId(userId: ID!, filter: String): [Product!]!
