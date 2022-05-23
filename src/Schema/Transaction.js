@@ -17,5 +17,6 @@ export const typeDef = gql`
     WITHDRAW
     SELL
     BUY
+    REFUND
   }
 `;

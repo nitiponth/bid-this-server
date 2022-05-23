@@ -31,6 +31,7 @@ import { updateTransaction } from "../functions/transaction/transaction";
 
 import { v4 as uuidv4 } from "uuid";
 import { sendRecoveryPasswordEmail } from "../functions/sendRecoveryPasswordEmail";
+import { refundCreditFromBannedProduct } from "../functions/admin/product/refundCreditFromBannedProduct";
 
 const Mutation = {
   //User Mutation
@@ -749,7 +750,15 @@ const Mutation = {
       throw new Error("User not found!");
     }
 
+    if (newStatus === "BANNED") {
+      if (user.status === "BANNED") {
+        throw new Error("Something went wrong, This user is already banned.");
+      }
+      await refundCreditFromBannedProduct(userId);
+    }
+
     user.status = newStatus;
+
     await user.save();
 
     return user;
