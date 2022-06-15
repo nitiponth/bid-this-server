@@ -32,6 +32,7 @@ import { updateTransaction } from "../functions/transaction/transaction";
 import { v4 as uuidv4 } from "uuid";
 import { sendRecoveryPasswordEmail } from "../functions/sendRecoveryPasswordEmail";
 import { refundCreditFromBannedProduct } from "../functions/admin/product/refundCreditFromBannedProduct";
+import mongoose from "mongoose";
 
 const Mutation = {
   //User Mutation
@@ -1217,7 +1218,40 @@ const Mutation = {
   // Bid Mutation
   placeBid: async (parent, { productId, bidPrice }, { userCtx }, info) => {
     //Actived check
+
+    // const now = new Date();
+    // const product = await Product.aggregate([
+    //   {
+    //     $match: {
+    //       $and: [
+    //         {
+    //           _id: ObjectId(productId),
+    //         },
+    //         {
+    //           status: "ACTIVED",
+    //         },
+    //         {
+    //           start: {
+    //             $lte: ISODate(now),
+    //           },
+    //         },
+    //         {
+    //           end: {
+    //             $gte: ISODate(now),
+    //           },
+    //         },
+    //         {
+    //           "price.current": {
+    //             $lt: 3000,
+    //           },
+    //         },
+    //       ],
+    //     },
+    //   },
+    // ]);
+
     const product = await Product.findById(productId);
+
     if (!product) {
       throw new Error("Product not found");
     }
@@ -1242,6 +1276,10 @@ const Mutation = {
       );
     }
 
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
     //Wallet Check
     let bidInfo;
     if (product.price.current) {
@@ -1264,68 +1302,106 @@ const Mutation = {
       }
     }
 
-    //refund old bidder money if not a first bit
-    if (product.price.current) {
-      const oldBidder = await User.findById(bidInfo[0].bidder);
-      oldBidder.wallet = oldBidder.wallet + bidInfo[0].bidPrice;
-      await oldBidder.save();
-      pubsub.publish(`WALLET_CHANGED ${oldBidder.id}`, {
-        walletChanged: oldBidder.wallet,
-      });
-
-      const message = `Someone placed a higher bid than you. Let go check it! `;
-
-      sendNotificaitons({
-        sellerId: product.seller,
-        productId: product.id,
-        targetId: oldBidder.id,
-        message,
-      });
-    }
-
-    //pay for new bid
-    const payUser = await User.findById(userCtx.id);
-    payUser.wallet = payUser.wallet - bidPrice;
-    await payUser.save();
-
-    pubsub.publish(`WALLET_CHANGED ${payUser.id}`, {
-      walletChanged: payUser.wallet,
-    });
-
-    //create new bid infomation
-    const newBidInfo = new Bid({
-      product: productId,
-      bidPrice: bidPrice,
-      bidder: userCtx.id,
-      bidTime: currentTime,
-    });
-
-    await newBidInfo.save();
-
     //update product's current price
-    product.price.current = bidPrice;
-    product.buyer = payUser.id;
+    // product.price.current = bidPrice;
+    // product.buyer = payUser.id;
 
     //update end time
-    const timeDiff = product.end - currentTime;
-    //timeDiff < 10m
-    if (timeDiff < 600000) {
-      //product.end = product.end + 15m
-      const endTime = currentTime;
-      endTime.setMinutes(endTime.getMinutes() + 15);
-      product.end = endTime;
+    // const timeDiff = product.end - currentTime;
+    // //timeDiff < 10m
+    // if (timeDiff < 600000) {
+    //   //product.end = product.end + 15m
+    //   const endTime = currentTime;
+    //   endTime.setMinutes(endTime.getMinutes() + 15);
+    //   product.end = endTime;
+    // }
+
+    const updatedProduct = await Product.findOneAndUpdate(
+      {
+        _id: mongoose.Types.ObjectId(productId),
+        "price.current": { $lt: bidPrice },
+      },
+      {
+        $set: {
+          endTime: product.end,
+          "price.current": bidPrice,
+          buyer: mongoose.Types.ObjectId(userCtx.id),
+        },
+      },
+      {
+        returnNewDocument: true,
+      }
+    );
+
+    if (!!updatedProduct) {
+      if (product.price.current) {
+        if (product.buyer.toString() !== userCtx.id.toString()) {
+          //refund old bidder money if not a previous buyer
+          const oldBidder = await User.findById(product.buyer);
+
+          // console.log("old bidder :", oldBidder.wallet);
+
+          oldBidder.wallet = oldBidder.wallet + product.price.current;
+
+          await oldBidder.save();
+
+          // console.log("old bidder update to :", oldBidder.wallet);
+          // console.log("-----------------");
+
+          pubsub.publish(`WALLET_CHANGED ${oldBidder._id.toString()}`, {
+            walletChanged: oldBidder.wallet,
+          });
+
+          const message = `Someone placed a higher bid than you. Let go check it! `;
+
+          sendNotificaitons({
+            sellerId: product.seller,
+            productId: product.id,
+            targetId: oldBidder.id,
+            message,
+          });
+        }
+      }
+
+      //pay for new bid
+      const payUser = await User.findById(userCtx.id);
+      // console.log("current bidder:", payUser.wallet);
+
+      if (product.buyer.toString() === userCtx.id.toString()) {
+        payUser.wallet = payUser.wallet - (bidPrice - product.price.current);
+      } else {
+        payUser.wallet = payUser.wallet - bidPrice;
+      }
+
+      await payUser.save();
+
+      // console.log("current bidder update to :", payUser.wallet);
+
+      pubsub.publish(`WALLET_CHANGED ${payUser.id}`, {
+        walletChanged: payUser.wallet,
+      });
+
+      //create new bid infomation
+      const newBidInfo = new Bid({
+        product: productId,
+        bidPrice: bidPrice,
+        bidder: userCtx.id,
+        bidTime: currentTime,
+      });
+
+      await newBidInfo.save();
+
+      pubsub.publish(`BID_PLACED ${productId}`, {
+        bidPlaced: { product: updatedProduct, bidInfo: newBidInfo },
+      });
+      pubsub.publish(`PRODUCTS_CHANGED`, {
+        productsChanged: "Bid placed in products",
+      });
+
+      return newBidInfo;
+    } else {
+      throw new Error(`Bid failed, please try again.`);
     }
-
-    await product.save();
-
-    pubsub.publish(`BID_PLACED ${productId}`, {
-      bidPlaced: { product: product, bidInfo: newBidInfo },
-    });
-    pubsub.publish(`PRODUCTS_CHANGED`, {
-      productsChanged: "Bid placed in products",
-    });
-
-    return newBidInfo;
   },
 
   // Comment mutaiton
