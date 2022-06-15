@@ -1290,9 +1290,9 @@ const Mutation = {
 
     //Check wallet values
     const user = await User.findById(userCtx.id);
-    if (product.price.current && bidInfo[0].bidder.toString() === userCtx.id) {
+    if (product.price.current && product.buyer?.toString() === userCtx.id) {
       //bidder is the same one with old bidder
-      if (user.wallet + bidInfo[0].bidPrice < bidPrice) {
+      if (user.wallet + product.price.current < bidPrice) {
         throw new Error("Your balance is not enough to bid.");
       }
     } else {
@@ -1319,7 +1319,10 @@ const Mutation = {
     const updatedProduct = await Product.findOneAndUpdate(
       {
         _id: mongoose.Types.ObjectId(productId),
-        "price.current": { $lt: bidPrice },
+        $or: [
+          { "price.current": { $lt: bidPrice } },
+          { "price.current": { $type: "null" } },
+        ],
       },
       {
         $set: {
@@ -1397,6 +1400,8 @@ const Mutation = {
       pubsub.publish(`PRODUCTS_CHANGED`, {
         productsChanged: "Bid placed in products",
       });
+
+      console.log(userCtx.id, "place bid at", bidPrice);
 
       return newBidInfo;
     } else {
